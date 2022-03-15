@@ -1,0 +1,65 @@
+name: 1.0.$(Rev:r)-$(Build.SourceBranchName)
+
+trigger:
+  paths:
+    exclude:
+    - "*.md"
+
+pr: none
+
+variables:
+- group: general
+- name: version_tag
+  value: $(Build.SourceBranchName)
+
+
+stages:
+- stage: solution
+  displayName: Build solution
+  dependsOn: []
+  jobs:
+  - template: templates/build-solution.yml
+    parameters:
+      project_name: $(project_name)
+      version_tag: $(version_tag)
+      target_docker_registry: $(target_docker_registry)
+      push_image: 'true'
+      windows_pool_name: $(windows_pool_name)
+      windows_pool_vm: $(windows_pool_vm)
+
+- stage: images
+  displayName: Build images
+  dependsOn:
+  - solution
+  jobs:
+  - template: templates/build-images.yml
+    parameters:
+      project_name: $(project_name)
+      version_tag: $(version_tag)
+      target_docker_registry: $(target_docker_registry)
+      windows_pool_name: $(windows_pool_name)
+      windows_pool_vm: $(windows_pool_vm)
+      linux_pool_name: $(linux_pool_name)
+      linux_pool_vm: $(linux_pool_vm)
+      deploy_pool_name: $(deploy_pool_name)
+      deploy_pool_vm: $(deploy_pool_vm)
+
+- stage: deploy
+  displayName: deploy
+  dependsOn:
+  - images
+  variables:
+  - group: general
+  - group: deploy
+  jobs:
+  - template: templates/deploy.yml
+    parameters:
+      project_name: $(project_name)
+      environment_name: testing
+      namespace: $(namespace_prefix)-$(Build.SourceBranchName)
+      master_resource_name: $(master_resource_name))
+      k8s_admin_connection: $(k8s_admin_service_connection_testing)
+      dns_tld: $(dns_tld)
+      deploytype: nonproduction
+      pool_name: $(deploy_pool_name)
+      pool_vm: $(deploy_pool_vm)

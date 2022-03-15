@@ -1,0 +1,484 @@
+parameters:
+- name: project_name
+  type: string
+- name: environment_name
+  type: string
+- name: namespace
+  type: string
+- name: master_resource_name
+  type: string
+- name: k8s_admin_connection
+  type: string
+- name: dns_tld
+  type: string
+- name: deploytype
+  type: string
+  default: nonproduction
+- name: artifactpipeline
+  type: string
+  default: current
+- name: pool_name
+  type: string
+  default: Azure Pipelines
+- name: pool_vm
+  type: string
+  default: ubuntu-latest
+- name: kubectl_version
+  type: string
+  default:  1.23.4
+
+jobs:
+- deployment: deploy
+  displayName: Deploy platform
+  pool:
+    name: ${{ parameters.pool_name }}
+    vmImage: ${{ parameters.pool_vm }}
+  environment: '${{ parameters.environment_name }}.${{ parameters.namespace }}'
+  strategy:
+    runOnce:
+      deploy:
+        steps:
+
+        - task: KubectlInstaller@0
+          inputs:
+            kubectlVersion: ${{ parameters.kubectl_version }}
+
+        - pwsh: |
+            $namespaceLower = "${{ parameters.namespace }}".ToLower().Substring(0, [math]::Min(58, "${{ parameters.namespace }}".Length)).Replace("_", "-")
+            Write-Host "##vso[task.setvariable variable=namespace;isOutput=true]$namespaceLower"
+          name: names
+          displayName: Set names
+
+        - task: DownloadSecureFile@1
+          name: getLicense
+          inputs:
+            secureFile: license.${{ parameters.environment_name }}.xml
+          displayName: Download Sitecore license
+        
+        - download: ${{parameters.artifactpipeline }}
+          artifact: manifests
+          displayName: Download manifests
+
+        - pwsh: |
+            Move-Item "$(Pipeline.Workspace)/${{ parameters.artifactpipeline }}/manifests" $(Pipeline.Workspace)/ -Verbose
+          displayName: Move manifests to common location
+          condition: ne('${{ parameters.artifactpipeline }}', 'current')
+
+        - pwsh: |
+            @("commonpatch.version-deployments", "commonpatch.version-jobs") | ForEach-Object {
+              $versionFilePath = Resolve-Path ("$(Pipeline.Workspace)/manifests/overlays/common-patches/{0}.yaml" -f $_)
+              $content = Get-Content $versionFilePath
+              $newContent = $content.Replace("1.0-version", "$(Build.BuildNumber)")
+              if($content -eq $newContent) {
+                Write-Warning "Could not replace version in file ${versionFilePath}: `n${content}"
+              } else {
+                Set-Content -Path $versionFilePath -Value $newContent
+                Write-Host "Replaced version in $versionFilePath"
+              }
+            }
+
+            Copy-Item "$(Pipeline.Workspace)/manifests/overlays/common-patches/*.yaml" "$(Pipeline.Workspace)/manifests/overlays/${{ parameters.deploytype }}/" -Verbose -Force
+          displayName: Include common patch files
+
+        - pwsh: |
+            $newLicensePath = "$(Pipeline.Workspace)/manifests/sitecore/ltsc2019/xp1/secrets/sitecore-license.txt"
+            If(test-path $newLicensePath) {
+              Write-Host "Remove existing license file"
+              Remove-Item $newLicensePath
+            }
+
+            $parentFolder = split-path $newLicensePath -Parent
+            if(-not (test-path $parentFolder)) {
+              Write-Host "parent folder ${parentFolder} not existing"
+              New-Item $parentFolder -ItemType Directory
+            }
+
+            $Stream = [System.IO.File]::OpenRead("$(getLicense.secureFilePath)")
+            try {
+              $memory = [System.IO.MemoryStream]::new()
+              $gzip = [System.IO.Compression.GZipStream]::new($memory, [System.IO.Compression.CompressionLevel]::Optimal, $false)
+              $Stream.CopyTo($gzip)
+              $gzip.Close()
+              $encodedString = [System.Convert]::ToBase64String($memory.ToArray())
+            }
+            finally {
+              if ($null -ne $gzip) {
+                  $gzip.Dispose()
+                  $gzip = $null
+              }
+
+              if ($null -ne $memory) {
+                  $memory.Dispose()
+                  $memory = $null
+              }
+
+              $Stream.Dispose()
+              $Stream = $null
+            }
+
+            Set-Content -Path $newLicensePath -Value $encodedString -Encoding ascii
+          displayName: Encode license file
+
+# dynamic environment resource steps (ReviewApp@0 workarounds)
+        - task: Kubernetes@1
+          inputs:
+            kubernetesServiceEndpoint: ${{ parameters.k8s_admin_connection }}
+            command: apply
+            useConfigurationFile: true
+            inline: '{ "kind": "Namespace", "apiVersion": "v1", "metadata": { "name": "$(names.namespace)" }}'
+          displayName: 'Deploy namespace'
+
+        - task: Kubernetes@1
+          name: getMasterServiceAccounts
+          inputs:
+            connectionType: Kubernetes Service Connection
+            kubernetesServiceEndpoint: ${{ parameters.k8s_admin_connection }}
+            command: get
+            arguments: serviceaccount
+            namespace: ${{ parameters.master_resource_name }}
+            outputFormat: jsonpath="{.items.*.metadata.name}"
+          displayName: Get master service accounts
+
+        - pwsh: |
+            $output = $(getMasterServiceAccounts.KubectlOutput)
+            $account = $output.Trim().Replace(",", "") -split " " | Where-Object { $_ -like "azdev-sa-*" } | Select-Object -First 1
+
+            if([string]::IsNullOrEmpty($account))
+            {
+              throw "Could not find service account in '$output'."
+            }
+
+            Write-Host "Found master service account: $account."
+            Write-Host "##vso[task.setvariable variable=master_resource_k8s_service_account]$account"
+          displayName: Set master service account
+
+        - task: ReviewApp@0
+          inputs:
+            resourceName: ${{ parameters.master_resource_name }}
+          displayName: Deploy dynamic environment resource
+
+        - task: Kubernetes@1
+          inputs:
+            kubernetesServiceEndpoint: ${{ parameters.k8s_admin_connection }}
+            command: apply
+            useConfigurationFile: true
+            inline: '{ "apiVersion": "rbac.authorization.k8s.io/v1", "kind": "RoleBinding", "metadata": { "name": "$(names.namespace)-view", "namespace": "$(names.namespace)" }, "roleRef": { "apiGroup": "rbac.authorization.k8s.io", "kind": "ClusterRole", "name": "view" }, "subjects": [ { "kind": "ServiceAccount", "name": "$(master_resource_k8s_service_account)", "namespace": "${{ parameters.master_resource_name }}" } ] }'
+          displayName: Deploy rolebinding for dynamic environment resource
+# /dynamic environment resource steps (ReviewApp@0 workarounds)
+
+        - powershell: |
+            ("cm", "cd", "id") | ForEach-Object {
+              $service = "$_"
+              $hostname = "{0}-{1}.{2}" -f $service, $env:NAMESPACE, $env:DNS_TLD
+              $path = resolve-path "$(Pipeline.Workspace)/manifests/sitecore/ltsc2019/xp1/configmaps/${service}-hostname"
+              Set-Content -Path $path -Value $hostname -NoNewLine
+            }
+            Set-Content -Path (resolve-path "$(Pipeline.Workspace)/manifests/bases/configmaps/mailweb-hostname") -Value ("{0}-{1}.{2}" -f "mails", $env:NAMESPACE, $env:DNS_TLD) -NoNewLine
+          env:
+            NAMESPACE: $(names.namespace)
+            DNS_TLD: ${{ parameters.dns_tld }}
+          displayName: Create hostname configmap
+
+        - powershell: |
+            If ('$(Hostname_Cm)' -notlike "`$(*)") { Set-Content -NoNewLine -Path (resolve-path "$(Pipeline.Workspace)/manifests/sitecore/ltsc2019/xp1/configmaps/cm-hostname") -Value '$(Hostname_Cm)'; }
+            If ('$(Hostname_Cd)' -notlike "`$(*)") { Set-Content -NoNewLine -Path (resolve-path "$(Pipeline.Workspace)/manifests/sitecore/ltsc2019/xp1/configmaps/cm-hostname") -Value '$(Hostname_Cd)'; }
+          env:
+            NAMESPACE: $(names.namespace)
+            DNS_TLD: ${{ parameters.dns_tld }}
+          displayName: Override hostnames
+          condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/feature/master'))
+
+        - powershell: |
+            $outputPath = "$(Pipeline.Workspace)/manifests/bases/sitecore-external-pvc"
+
+            ("mssql", "solr") | ForEach-Object {
+              $service = "$_"
+              $mountName = "{0}-data" -f $service;
+              $newName = "{0}-{1}-data" -f $env:NAMESPACE, $service;
+
+              $path = "${outputPath}/${service}-volume-mount.yaml"
+              (Get-Content $path).Replace("claimName: ${mountName}", "claimName: ${newName}") | Set-Content -Path $path
+
+              "- op: replace`n  path: /metadata/name`n  value: $newName" | Out-File -Encoding ascii -NoNewline -FilePath "$outputPath/ci.${service}-pvc.metadata.name.patch.yaml" -Force
+            }
+          env:
+            NAMESPACE: $(names.namespace)
+            DNS_TLD: ${{ parameters.dns_tld }}
+          displayName: Create pvc patches
+
+        - powershell: |
+            Get-ChildItem -Filter "*-database*username.txt" | Set-Content -NoNewLine -Value '$(SQL_USER_USERNAME)' ;
+            Get-ChildItem -Filter "*-database*password.txt" | Set-Content -NoNewLine -Value '$(SQL_USER_PASSWORD)';
+            Set-Content -NoNewLine -Path sitecore-databaseusername.txt -Value 'sa' ;
+            Set-Content -NoNewLine -Path sitecore-databasepassword.txt -Value '$(SQL_SA_PASSWORD)' ;
+            Set-Content -NoNewLine -Path sitecore-adminpassword.txt -Value   '$(SITECORE_ADMIN_PASSWORD)' ;
+            Set-Content -NoNewLine -Path sitecore-reportingapikey.txt -Value '$(REPORTING_API_KEY)' ;
+            Set-Content -NoNewLine -Path sitecore-telerikencryptionkey.txt -Value '$(TELERIK_ENCRYPTION_KEY)' ;
+            Set-Content -NoNewLine -Path sitecore-identitysecret.txt -Value '$(SITECORE_IDSECRET)' ;
+            Set-Content -NoNewLine -Path sitecore-identitycertificate.txt -Value '$(SITECORE_ID_CERTIFICATE)' ;
+            Set-Content -NoNewLine -Path sitecore-identitycertificatepassword.txt -Value '$(SITECORE_ID_CERTIFICATE_PASSWORD)' ;
+            Set-Content -NoNewLine -Path sitecore-media-request-protection-shared-secret.txt -Value '$(MEDIA_REQUEST_PROTECTION_SHARED_SECRET)' ;
+
+            If ('$(SQL_SERVER)'  -notlike "`$(*)") { Set-Content -NoNewLine -Path sitecore-databaseservername.txt -Value '$(SQL_SERVER)' ; }
+            If ('$(SQL_SA_USER)' -notlike "`$(*)") { Set-Content -NoNewLine -Path sitecore-databaseusername.txt -Value '$(SQL_SA_USER)' ; }
+            If ('$(SQL_ELASTIC_POOL_NAME)' -notlike "`$(*)") { Set-Content -NoNewLine -Path sitecore-database-elastic-pool-name.txt -Value '$(SQL_ELASTIC_POOL_NAME)' ; }
+            If ('$(SOLR_CORE_PREFIX)' -notlike "`$(*)") { Set-Content -NoNewLine -Path sitecore-solr-core-prefix-name.txt -Value '$(SOLR_CORE_PREFIX)' ; }
+            If ('$(SOLR_CONNECTION)' -notlike "`$(*)") { 
+              Set-Content -NoNewLine -Path sitecore-solr-connection-string.txt -Value '$(SOLR_CONNECTION);solrCloud=true' ; 
+              Set-Content -NoNewLine -Path sitecore-solr-connection-string-xdb.txt -Value '$(SOLR_CONNECTION)/$(SOLR_XDB_CORE);solrCloud=true' ;
+            }
+
+          workingDirectory: $(Pipeline.Workspace)/manifests/sitecore/ltsc2019/xp1/secrets
+          displayName: Create sitecore secrets files
+
+        - powershell: |
+            Set-Content -NoNewLine -Path cli-clientid.txt     -Value '$(SITECORE_CLI_CLIENTID)' ;
+            Set-Content -NoNewLine -Path cli-clientsecret.txt -Value '$(SITECORE_CLI_CLIENTSECRET)' ;
+            Set-Content -Path 'mindkey.env' -Value ("azurestorageaccountname={0}`nazurestorageaccountkey={1}" -f '$(MindKey_StorageAccount_Name)', '$(MindKey_StorageAccount_Key)')
+            Set-Content -NoNewLine -Path mscrm-organization.txt -Value '$(MsCrm_Organization)' ;
+            Set-Content -NoNewLine -Path mscrm-url.txt -Value '$(MsCrm_Url)' ;
+            Set-Content -NoNewLine -Path mscrm-username.txt -Value '$(MsCrm_Username)' ;
+            Set-Content -NoNewLine -Path mscrm-password.txt -Value '$(MsCrm_Password)' ;
+          workingDirectory: $(Pipeline.Workspace)/manifests/bases/secrets
+          displayName: Create custom secrets files
+
+        - task: Kubernetes@1
+          inputs:
+            kubernetesServiceEndpoint: ${{ parameters.k8s_admin_connection }}
+            command: apply
+            useConfigurationFile: true
+            inline: '{ "kind": "Namespace", "apiVersion": "v1", "metadata": { "name": "$(names.namespace)" }}'
+          displayName: 'Deploy namespace'
+
+        # - task: PublishPipelineArtifact@1
+        #   inputs:
+        #     artifact: 'deployment-$(Build.BuildNumber)-$(System.PhaseAttempt)'
+        #     path: '$(Pipeline.Workspace)/manifests/'
+        #   displayName: Publish manifests artifacts
+
+        # - task: Kubernetes@1
+        #   continueOnError: true
+        #   inputs:
+        #     connectionType: Kubernetes Service Connection
+        #     kubernetesServiceEndpoint: ${{ parameters.k8s_admin_connection }}
+        #     command: delete
+        #     namespace: $(names.namespace)
+        #     arguments: job mssql-init solr-init
+        #     outputFormat: ''
+        #   displayName: Remove old storage init containers
+
+        - task: Kubernetes@1
+          inputs:
+            connectionType: Kubernetes Service Connection
+            kubernetesServiceEndpoint: ${{ parameters.k8s_admin_connection }}
+            command: apply
+            namespace: $(names.namespace)
+            arguments: --validate=false -k "$(Pipeline.Workspace)/manifests/overlays/${{ parameters.deploytype }}"
+            outputFormat: ''
+          displayName: Deploy manifest
+
+        # - task: Kubernetes@1
+        #   inputs:
+        #     connectionType: Kubernetes Service Connection
+        #     kubernetesServiceEndpoint: ${{ parameters.k8s_admin_connection }}
+        #     command: wait
+        #     namespace: $(names.namespace)
+        #     arguments: --for=condition=Available deployments solr --timeout=10m
+        #     outputFormat: ''
+        #   displayName: Wait on Solr to become available
+
+        # - task: Kubernetes@1
+        #   inputs:
+        #     connectionType: Kubernetes Service Connection
+        #     kubernetesServiceEndpoint: ${{ parameters.k8s_admin_connection }}
+        #     command: delete
+        #     namespace: $(names.namespace)
+        #     arguments: -f "$(Pipeline.Workspace)/manifests/sitecore/ltsc2019/xp1/windows/init/solr-init.yaml" --ignore-not-found=true
+        #     outputFormat: ''
+        #   displayName: Remove Solr init
+
+        # - task: Kubernetes@1
+        #   inputs:
+        #     connectionType: Kubernetes Service Connection
+        #     kubernetesServiceEndpoint: ${{ parameters.k8s_admin_connection }}
+        #     command: apply
+        #     namespace: $(names.namespace)
+        #     arguments: -f "$(Pipeline.Workspace)/manifests/sitecore/ltsc2019/xp1/windows/init/solr-init.yaml"
+        #     outputFormat: ''
+        #   displayName: Deploy Solr init
+
+        - task: Kubernetes@1
+          inputs:
+            connectionType: Kubernetes Service Connection
+            kubernetesServiceEndpoint: ${{ parameters.k8s_admin_connection }}
+            command: wait
+            namespace: $(names.namespace)
+            arguments: --for=condition=Complete jobs solr-init mssql-init --timeout=30m
+            outputFormat: ''
+          displayName: Wait for storage init containers to complete
+
+        - task: Kubernetes@1
+          inputs:
+            connectionType: Kubernetes Service Connection
+            kubernetesServiceEndpoint: ${{ parameters.k8s_admin_connection }}
+            command: logs
+            namespace: $(names.namespace)
+            arguments: job/mssql-init
+            outputFormat: ''
+          displayName: Get mssql-init logs
+
+        - task: Kubernetes@1
+          inputs:
+            connectionType: Kubernetes Service Connection
+            kubernetesServiceEndpoint: ${{ parameters.k8s_admin_connection }}
+            command: logs
+            namespace: $(names.namespace)
+            arguments: job/solr-init
+            outputFormat: ''
+          displayName: Get solr-init logs
+
+        - task: Kubernetes@1
+          continueOnError: true
+          inputs:
+            connectionType: Kubernetes Service Connection
+            kubernetesServiceEndpoint: ${{ parameters.k8s_admin_connection }}
+            command: delete
+            namespace: $(names.namespace)
+            arguments: job mssql-init solr-init
+            outputFormat: ''
+          displayName: Remove storage init containers
+
+        - task: Kubernetes@1
+          inputs:
+            connectionType: Kubernetes Service Connection
+            kubernetesServiceEndpoint: ${{ parameters.k8s_admin_connection }}
+            command: rollout
+            namespace: $(names.namespace)
+            arguments: status deployment cm --watch=true --timeout=30m
+            outputFormat: ''
+          displayName: Wait on CM deployment
+
+        - pwsh: |
+            Start-Sleep -Seconds 30
+          displayName: Wait a bit
+
+        - task: Kubernetes@1
+          inputs:
+            connectionType: Kubernetes Service Connection
+            kubernetesServiceEndpoint: ${{ parameters.k8s_admin_connection }}
+            command: wait
+            namespace: $(names.namespace)
+            arguments: --for=condition=Ready --selector=app=cm,version=$(Build.BuildNumber) pod --timeout=30m
+            outputFormat: json
+          displayName: Wait on CM to become ready
+
+        - task: Kubernetes@1
+          inputs:
+            connectionType: Kubernetes Service Connection
+            kubernetesServiceEndpoint: ${{ parameters.k8s_admin_connection }}
+            command: get
+            namespace: $(names.namespace)
+            arguments: deployment
+            outputFormat: wide
+          displayName: Show current deployment status
+          condition: always()
+
+        - task: Kubernetes@1
+          inputs:
+            connectionType: Kubernetes Service Connection
+            kubernetesServiceEndpoint: ${{ parameters.k8s_admin_connection }}
+            command: get
+            namespace: $(names.namespace)
+            arguments: pod --selector version=$(Build.BuildNumber)
+            outputFormat: wide
+          displayName: Show current pods status
+          condition: always()
+
+        - task: Kubernetes@1
+          inputs:
+            connectionType: Kubernetes Service Connection
+            kubernetesServiceEndpoint: ${{ parameters.k8s_admin_connection }}
+            command: get
+            namespace: $(names.namespace)
+            arguments: events --sort-by=".metadata.managedFields[0].time"
+            outputFormat: wide
+          displayName: Show events from cluster
+          condition: failed()
+
+        - task: Kubernetes@1
+          name: getIngress
+          inputs:
+            connectionType: Kubernetes Service Connection
+            kubernetesServiceEndpoint: ${{ parameters.k8s_admin_connection }}
+            command: get
+            namespace: $(names.namespace)
+            arguments: ingress
+            outputFormat: jsonpath="{range .items[*].spec.tls[*]}{.hosts[*]} {end}"
+          displayName: Get ingress hosts
+
+        - powershell: |
+            $ingressHosts = $(getIngress.KubectlOutput).Trim() -split " "
+            $message = "`nYou solution has now been deployed!`n`n"
+            $message += "Ingress has the following tls hostnames exposed:`n`n"
+
+            $ingressHosts | ForEach-Object {
+              $message += "- https://$_`n"
+            }
+
+            Write-Host $message
+          displayName: Print ingress hosts
+
+- job: items
+  dependsOn:
+    - deploy
+  displayName: Push items
+  continueOnError: true
+  pool:
+    name: ${{ parameters.pool_name }}
+    vmImage: ${{ parameters.pool_vm }}
+  
+  steps:
+  - checkout: self
+
+  - task: UseDotNet@2
+    inputs:
+      packageType: 'sdk'
+      version: '3.x'
+      performMultiLevelLookup: true
+
+  - pwsh: |
+      dotnet tool restore
+      dotnet sitecore --version
+    displayName: Install Sitecore CLI
+
+  - pwsh: |
+      $cmHost = get-content "$(Pipeline.Workspace)/manifests/sitecore/ltsc2019/xp1/configmaps/cm-hostname"
+      $idHost = get-content "$(Pipeline.Workspace)/manifests/sitecore/ltsc2019/xp1/configmaps/id-hostname"
+
+      Write-Host "Logging into ID Server"
+      dotnet sitecore login --client-credentials true --auth "https://${idHost}" --cm "https://${cmHost}" --allow-write true --client-id "$(SITECORE_CLI_CLIENTID)" --client-secret "$(SITECORE_CLI_CLIENTSECRET)"
+    displayName: Login to sitecore
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
+  - pwsh: |
+      dotnet sitecore ser push --publish --exclude Plesner.Project.Content --verbose --trace
+    displayName: Publish items
+    continueOnError: true
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
+  - pwsh: |
+      dotnet sitecore ser push --publish --include Plesner.Project.Content --verbose --trace
+    displayName: Publish content
+    continueOnError: true
+    condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/feature/master'))
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
+  - pwsh: |
+      dotnet sitecore index schema-populate --verbose --trace
+    displayName: Populate schema
+    continueOnError: true
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1

@@ -1,0 +1,46 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+bases:
+- ../../sitecore/ltsc2019/xm1/secrets
+- ../../sitecore/ltsc2019/xm1/configmaps
+- ../../sitecore/ltsc2019/xm1/init
+- ../../sitecore/ltsc2019/xm1
+
+resources:
+- ../../sitecore/ltsc2019/xm1/volumes/azurefile/logs.yaml
+- ingress.yaml
+- ingress-configuration.yaml
+- letsencrypt-issuer.yaml
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+configMapGenerator:
+- name: custom-hostnames
+  files:
+  - rendering-hostname
+
+vars:
+- name: rendering-hostname
+  objref:
+    kind: ConfigMap
+    name: custom-hostnames
+    apiVersion: v1
+  fieldref:
+    fieldpath: data.rendering-hostname
+
+- name: cd-hostname
+  objref:
+    kind: ConfigMap
+    name: sitecore-hostnames
+    apiVersion: v1
+  fieldref:
+    fieldpath: data.cd-hostname
+
+
+patches:
+  - path: ./patch.cm-rendering.yaml
+    target:
+      kind: Deployment
+      name: cm

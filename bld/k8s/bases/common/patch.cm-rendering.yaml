@@ -1,0 +1,5 @@
+- op: add
+  path: /spec/template/spec/containers/0/env/-
+  value:
+    name: RENDERING_HOST_PUBLIC_URI
+    value: https://$(rendering-hostname)

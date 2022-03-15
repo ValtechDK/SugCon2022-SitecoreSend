@@ -1,0 +1,94 @@
+parameters:
+- name: project_name
+  type: string
+- name: version_tag
+  type: string
+- name: target_docker_registry
+  type: string
+- name: windows_pool_name
+  type: string
+  default: Azure Pipelines
+- name: windows_pool_vm
+  type: string
+  default: windows-latest
+- name: linux_pool_name
+  type: string
+  default: Azure Pipelines
+- name: linux_pool_vm
+  type: string
+  default: ubuntu-latest
+- name: deploy_pool_name
+  type: string
+  default: Azure Pipelines
+- name: deploy_pool_vm
+  type: string
+  default: ubuntu-latest
+- name: solution_image_artifact
+  type: string
+  default: Windows_solution
+
+
+
+jobs:
+
+- job: build_images
+  displayName: Build images
+  strategy:
+    matrix:
+      Windows_cm:
+        POOL_NAME: '${{ parameters.windows_pool_name }}'
+        POOL_VM: '${{ parameters.windows_pool_vm }}'
+        SERVICE_NAMES: 'cm id'
+        COMPOSE_FILE: docker-compose.yml
+      Windows_cd:
+        POOL_NAME: '${{ parameters.windows_pool_name }}'
+        POOL_VM: '${{ parameters.windows_pool_vm }}'
+        SERVICE_NAMES: 'cd'
+        COMPOSE_FILE: docker-compose.yml
+      Windows_inits:
+        POOL_NAME: '${{ parameters.windows_pool_name }}'
+        POOL_VM: '${{ parameters.windows_pool_vm }}'
+        SERVICE_NAMES: 'mssql-init solr-init'
+        COMPOSE_FILE: docker-compose.yml
+      Windows_xp:
+        POOL_NAME: '${{ parameters.windows_pool_name }}'
+        POOL_VM: '${{ parameters.windows_pool_vm }}'
+        SERVICE_NAMES: 'xconnect xdbautomationworker xdbsearchworker cortexprocessingworker'
+        COMPOSE_FILE: docker-compose.yml
+      # Windows_docs:
+      #   POOL_NAME: '${{ parameters.windows_pool_name }}'
+      #   POOL_VM: '${{ parameters.windows_pool_vm }}'
+      #   SERVICE_NAMES: 'docs'
+      #   COMPOSE_FILE: docker-compose.yml
+      Linux_external:
+        POOL_NAME: '${{ parameters.linux_pool_name }}'
+        POOL_VM: '${{ parameters.linux_pool_vm }}'
+        POOL_OS: Linux
+        SERVICE_NAMES: 'mssql solr redis mailserver'
+        COMPOSE_FILE: docker-compose.linux.yml
+
+  pool:
+    name: $(POOL_NAME)
+    vmImage: $(POOL_VM)
+  steps:
+  - template: build-steps.yml
+    parameters:
+      project_name: ${{ variables.project_name }}
+      version_tag: $(version_tag)
+      target_docker_registry: $(target_docker_registry)
+      service_names: $(SERVICE_NAMES)
+      compose_file: $(COMPOSE_FILE)
+      artifact_name: $(System.JobName)
+      solution_image_artifact: ${{ parameters.solution_image_artifact }}
+
+- job: build_artifacts
+  displayName: Build artifacts
+  dependsOn:
+  - build_images
+  pool:
+    name: ${{ parameters.deploy_pool_name }}
+    vmImage: ${{ parameters.deploy_pool_vm }}
+  steps:
+  - template: build-manifest.yml
+    parameters:
+      artifactpipeline: current

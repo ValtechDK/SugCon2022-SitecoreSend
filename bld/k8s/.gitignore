@@ -1,0 +1,7 @@
+sitecore/
+bases/**/ci.*.yaml
+overlays/**/ci.*.yaml
+*.zip
+tmp
+overlays/**/commonpatch.*.yaml
+!overlays/common-patches/commonpatch.*.yaml

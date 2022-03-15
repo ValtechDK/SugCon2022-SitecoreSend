@@ -1,0 +1,77 @@
+parameters:
+- name: artifactpipeline
+  type: string
+  default: current
+
+
+steps:
+- checkout: self
+
+- pwsh: |
+    dir "$(Pipeline.Workspace)" | Format-Table -Property Name, Size
+    Get-ChildItem -Path "$(Pipeline.Workspace)" -Include "*-digest.txt" -Recurse | Format-Table -Property FullName
+  displayName: List content before download
+
+- download: ${{ parameters.artifactpipeline }}
+  patterns: '**/*.txt'
+  displayName: Download digests of built images
+
+- pwsh: |
+    dir "$(Pipeline.Workspace)" | Format-Table -Property Name, Size
+    Get-ChildItem -Path "$(Pipeline.Workspace)" -Include "*-digest.txt" -Recurse | Format-Table -Property FullName
+  displayName: List content after download
+
+- pwsh: bld/k8s/prepare.ps1
+  displayName: Download Sitecore Deployment Package
+
+- pwsh: |
+    $patchesDir = Resolve-Path "$(Pipeline.Workspace)"
+    if("${{ parameters.artifactpipeline }}" -ne "current") {
+      $patchesDir = Resolve-Path "$(Pipeline.Workspace)/${{ parameters.artifactpipeline }}"
+    }
+    $overlays = Resolve-Path "bld/k8s/overlays"
+
+    $kustomizeFolders = Get-ChildItem $overlays -Recurse -Include "kustomization.yaml" `
+        | Split-Path -Parent | Where-Object { (Split-Path $_ -Leaf) -notin @("common", "secrets") }
+    Write-Host "Will enumerate folders:"
+    $kustomizeFolders
+
+    $files = Get-ChildItem -Path $patchesDir -Include "*-digest.txt" -Recurse
+    Write-Host "Will enumerate digest files:" 
+    $files | Select-Object -ExpandProperty FullName
+
+    $kustomizeFolders | ForEach-object {
+      Push-Location $_
+      $kustomizeFile = Join-Path $_ "kustomization.yaml" -Resolve
+      Add-Content -Path $kustomizeFile -Value "images:"
+
+      $files | ForEach-Object {
+        $serviceName = $_.BaseName.Substring(0, ($_.BaseName.Length - ("-digest".Length)))
+        $digest = Get-Content $_.FullName
+        $parts = $digest -split "@"
+        $newName = $parts[0]
+        $sha = $parts[1]
+
+        $imgName = $serviceName
+        if($serviceName -match "cd|cm|id") {
+          $imgName = "sitecore-xm1-${serviceName}"
+        }
+
+        Write-Host "Run kustomize edit set image ${imgName}=${digest} in ${PWD}"
+        $entry = "- name: ${imgName}`n  newName: $newName`n  digest: $sha"
+        Add-Content -Path $kustomizeFile -Value $entry
+      }
+
+      $file = Resolve-Path "kustomization.yaml"
+      Write-Host "Result for ${file}"
+      Get-Content $file
+
+      Pop-Location
+    }
+  displayName: Include image digests in overlays
+
+- task: PublishPipelineArtifact@1
+  inputs:
+    artifact: 'manifests'
+    path: '$(Build.SourcesDirectory)/bld/k8s'
+  displayName: Publish manifests artifacts

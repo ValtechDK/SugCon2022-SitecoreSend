@@ -1,0 +1,92 @@
+parameters:
+- name: project_name
+  type: string
+- name: version_tag
+  type: string
+- name: target_docker_registry
+  type: string
+- name: compose_file
+  type: string
+  default: docker-compose.yml
+- name: service_names
+  type: string
+- name: artifact_name
+  type: string
+  default: $(System.JobName)
+- name: solution_image_artifact
+  type: string
+  default: Windows_solution
+- name: push_images
+  type: string
+  default: 'true'
+
+steps:
+  - pwsh: |
+      $version = "${{ parameters.version_tag }}" -replace '[^a-z0-9\-_]','-' -replace '[-]+','-'
+      Write-Host "##vso[task.setvariable variable=version;isOutput=true]$version"
+    name: names
+
+    displayName: Set variables
+
+  - task: Docker@2
+    inputs:
+      containerRegistry: ${{ parameters.target_docker_registry }}
+      command: login
+    displayName: Registry login (target)
+
+  - download: current
+    artifact: ${{ parameters.solution_image_artifact }}
+    displayName: Download solution artifact
+    condition: ne('${{ parameters.service_names }}', 'solution')
+
+  - pwsh: |
+      $solutionDigest = Get-Content "$(Pipeline.Workspace)/${{ parameters.solution_image_artifact }}/solution-digest.txt"
+      Write-Host "Set solution digest: ${solutionDigest}"
+      Write-Host "##vso[task.setvariable variable=solution;isOutput=true]$solutionDigest"
+    name: digest
+    condition: ne('${{ parameters.service_names }}', 'solution')
+
+  - script: docker-compose --file ${{ parameters.compose_file }} build ${{ parameters.service_names }}
+    env:
+      PROJECT_NAME: ${{ parameters.project_name }}
+      TARGET_REGISTRY: '${{ parameters.target_docker_registry }}/'
+      VERSION: $(names.version)
+      CONFIGURATION: Release
+      BUILD_TARGET: production
+      NUGET_VALTECHDK_PAT: $(System.AccessToken)
+      SITECORE_REGISTRY: $(SITECORE_REGISTRY)
+      SOLUTION_IMAGE: '$(digest.solution)'
+    displayName: Build images
+
+  - script: docker-compose --file ${{ parameters.compose_file }} push ${{ parameters.service_names }}
+    env:
+      PROJECT_NAME: ${{ parameters.project_name }}
+      TARGET_REGISTRY: '${{ parameters.target_docker_registry }}/'
+      VERSION: $(names.version)
+    displayName: Push images
+    condition: ne('${{ parameters.push_images }}', 'false')
+
+  - pwsh: |
+      If(-not (Test-Path "$(Build.SourcesDirectory)/out")) {
+        New-Item -Path "$(Build.SourcesDirectory)/out" -ItemType Directory | Out-Null
+      }
+
+      "${{ parameters.service_names }}" -split " " | ForEach-Object {
+        $name = $_
+        $digest = docker inspect --format='{{index .RepoDigests 0}}' ("{0}{1}-{2}:{3}" -f $env:TARGET_REGISTRY, $env:PROJECT_NAME, $name, $env:VERSION)
+        Write-Host "service ${name} has digest ${digest}"
+        $digest | Out-File -FilePath $(Build.SourcesDirectory)/out/${name}-digest.txt -Force
+      }
+    env:
+      PROJECT_NAME: ${{ parameters.project_name }}
+      TARGET_REGISTRY: '${{ parameters.target_docker_registry }}/'
+      VERSION: $(names.version)
+    displayName: Save image digests
+    condition: ne('${{ parameters.push_images }}', 'false')
+
+  - task: PublishPipelineArtifact@1
+    inputs:
+      artifact: ${{ parameters.artifact_name }}
+      path: 'out'
+    displayName: Publish artifacts
+    condition: and(succeeded(), ne('${{ parameters.push_images }}', 'false') )
