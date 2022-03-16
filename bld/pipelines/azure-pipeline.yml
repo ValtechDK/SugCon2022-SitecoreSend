@@ -59,10 +59,10 @@ stages:
     parameters:
       project_name: $(project_name)
       environment_name: testing
-      namespace: $(namespace_prefix)-$(Build.SourceBranchName)
+      namespace: ${{ variables.namespace_prefix }}-$(Build.SourceBranchName)
       master_resource_name: ${{ variables.master_resource_name }}
-      k8s_admin_connection: $(k8s_admin_service_connection_testing)
-      dns_tld: $(dns_tld)
+      k8s_admin_connection: ${{ variables.k8s_admin_service_connection_testing }}
+      dns_tld: ${{ variables.dns_tld }}
       deploytype: nonproduction
       pool_name: $(deploy_pool_name)
       pool_vm: $(deploy_pool_vm)
