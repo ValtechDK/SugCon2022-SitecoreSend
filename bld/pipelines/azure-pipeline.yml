@@ -4,6 +4,9 @@ trigger:
   paths:
     exclude:
     - "*.md"
+  branches:
+    include:
+      - '*'
 
 pr: none
 

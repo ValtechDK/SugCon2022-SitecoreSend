@@ -324,7 +324,7 @@ jobs:
   dependsOn:
     - deploy
   displayName: Push items
-  condition: and(succeeded(), ne("$(SITECORE_CLI_CLIENTID)", "") )
+  condition: and(succeeded(), ne(variables['SITECORE_CLI_CLIENTID'], '') )
   continueOnError: true
   pool:
     name: ${{ parameters.pool_name }}
