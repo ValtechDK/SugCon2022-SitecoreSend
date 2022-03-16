@@ -59,7 +59,7 @@ stages:
     parameters:
       project_name: $(project_name)
       environment_name: testing
-      namespace: ${{ variables.namespace_prefix }}-$(Build.SourceBranchName)
+      namespace: sugcon-send-$(Build.SourceBranchName)
       master_resource_name: ${{ variables.master_resource_name }}
       k8s_admin_connection: ${{ variables.k8s_admin_service_connection_testing }}
       dns_tld: ${{ variables.dns_tld }}
