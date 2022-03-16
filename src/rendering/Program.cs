@@ -16,9 +16,6 @@ namespace SugCon.SitecoreSend
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                    webBuilder.ConfigureAppConfiguration(cfg => {
-                        
-                    });
                 });
         }
     }

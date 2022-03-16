@@ -51,22 +51,6 @@ services:
       mssql:
         condition: service_healthy
 
-  rendering:
-    volumes:
-      - .\:C:\solution
-    environment:
-      ASPNETCORE_ENVIRONMENT: "Development"
-      ASPNETCORE_URLS: "http://*:80"
-      # These values add to/override ASP.NET Core configuration values.
-      # See rendering host Startup for details.
-      Sitecore__InstanceUri: "http://cm"
-      Sitecore__RenderingHostUri: "https://${RENDERING_HOST}"
-      Sitecore__EnableExperienceEditor: "true"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.rendering-secure.entrypoints=websecure"
-      - "traefik.http.routers.rendering-secure.rule=Host(`${RENDERING_HOST}`)"
-      - "traefik.http.routers.rendering-secure.tls=true"
   solr:
     isolation: ${ISOLATION}
     image: ${SITECORE_DOCKER_REGISTRY}nonproduction/solr:8.8.2-${SITECORE_VERSION}
@@ -161,3 +145,23 @@ services:
       - "traefik.http.routers.cm-secure.middlewares=force-STS-Header"
     ports:
       - "80:80"
+
+  rendering:
+    volumes:
+      - .\:C:\solution
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      ASPNETCORE_URLS: "http://*:80"
+      # These values add to/override ASP.NET Core configuration values.
+      # See rendering host Startup for details.
+      Sitecore__InstanceUri: "http://cm"
+      Sitecore__RenderingHostUri: "https://${RENDERING_HOST}"
+      Sitecore__EnableExperienceEditor: "true"
+      Logging__LegLevel__Default: Debug
+      Logging__LogLevel__System: Information
+      Logging__LogLevel__Microsoft: Information
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.rendering-secure.entrypoints=websecure"
+      - "traefik.http.routers.rendering-secure.rule=Host(`${RENDERING_HOST}`)"
+      - "traefik.http.routers.rendering-secure.tls=true"

@@ -64,24 +64,9 @@ jobs:
           displayName: Move manifests to common location
           condition: ne('${{ parameters.artifactpipeline }}', 'current')
 
-        - pwsh: |
-            @("commonpatch.version-deployments", "commonpatch.version-jobs") | ForEach-Object {
-              $versionFilePath = Resolve-Path ("$(Pipeline.Workspace)/manifests/overlays/common-patches/{0}.yaml" -f $_)
-              $content = Get-Content $versionFilePath
-              $newContent = $content.Replace("1.0-version", "$(Build.BuildNumber)")
-              if($content -eq $newContent) {
-                Write-Warning "Could not replace version in file ${versionFilePath}: `n${content}"
-              } else {
-                Set-Content -Path $versionFilePath -Value $newContent
-                Write-Host "Replaced version in $versionFilePath"
-              }
-            }
-
-            Copy-Item "$(Pipeline.Workspace)/manifests/overlays/common-patches/*.yaml" "$(Pipeline.Workspace)/manifests/overlays/${{ parameters.deploytype }}/" -Verbose -Force
-          displayName: Include common patch files
 
         - pwsh: |
-            $newLicensePath = "$(Pipeline.Workspace)/manifests/sitecore/ltsc2019/xp1/secrets/sitecore-license.txt"
+            $newLicensePath = "$(Pipeline.Workspace)/manifests/sitecore/ltsc2019/xm1/secrets/sitecore-license.txt"
             If(test-path $newLicensePath) {
               Write-Host "Remove existing license file"
               Remove-Item $newLicensePath
@@ -167,44 +152,19 @@ jobs:
 # /dynamic environment resource steps (ReviewApp@0 workarounds)
 
         - powershell: |
-            ("cm", "cd", "id") | ForEach-Object {
+            ("cm", "cd", "id", "www") | ForEach-Object {
               $service = "$_"
               $hostname = "{0}-{1}.{2}" -f $service, $env:NAMESPACE, $env:DNS_TLD
-              $path = resolve-path "$(Pipeline.Workspace)/manifests/sitecore/ltsc2019/xp1/configmaps/${service}-hostname"
-              Set-Content -Path $path -Value $hostname -NoNewLine
+              $path = "$(Pipeline.Workspace)/manifests/bases/common/www-hostname"
+              if(-not (Test-Path $path) {
+              $path = "$(Pipeline.Workspace)/manifests/sitecore/ltsc2019/xm1/configmaps/${service}-hostname"
+              }
+              Set-Content -Path (Resolve-Path $path) -Value $hostname -NoNewLine
             }
-            Set-Content -Path (resolve-path "$(Pipeline.Workspace)/manifests/bases/configmaps/mailweb-hostname") -Value ("{0}-{1}.{2}" -f "mails", $env:NAMESPACE, $env:DNS_TLD) -NoNewLine
           env:
             NAMESPACE: $(names.namespace)
             DNS_TLD: ${{ parameters.dns_tld }}
           displayName: Create hostname configmap
-
-        - powershell: |
-            If ('$(Hostname_Cm)' -notlike "`$(*)") { Set-Content -NoNewLine -Path (resolve-path "$(Pipeline.Workspace)/manifests/sitecore/ltsc2019/xp1/configmaps/cm-hostname") -Value '$(Hostname_Cm)'; }
-            If ('$(Hostname_Cd)' -notlike "`$(*)") { Set-Content -NoNewLine -Path (resolve-path "$(Pipeline.Workspace)/manifests/sitecore/ltsc2019/xp1/configmaps/cm-hostname") -Value '$(Hostname_Cd)'; }
-          env:
-            NAMESPACE: $(names.namespace)
-            DNS_TLD: ${{ parameters.dns_tld }}
-          displayName: Override hostnames
-          condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/feature/master'))
-
-        - powershell: |
-            $outputPath = "$(Pipeline.Workspace)/manifests/bases/sitecore-external-pvc"
-
-            ("mssql", "solr") | ForEach-Object {
-              $service = "$_"
-              $mountName = "{0}-data" -f $service;
-              $newName = "{0}-{1}-data" -f $env:NAMESPACE, $service;
-
-              $path = "${outputPath}/${service}-volume-mount.yaml"
-              (Get-Content $path).Replace("claimName: ${mountName}", "claimName: ${newName}") | Set-Content -Path $path
-
-              "- op: replace`n  path: /metadata/name`n  value: $newName" | Out-File -Encoding ascii -NoNewline -FilePath "$outputPath/ci.${service}-pvc.metadata.name.patch.yaml" -Force
-            }
-          env:
-            NAMESPACE: $(names.namespace)
-            DNS_TLD: ${{ parameters.dns_tld }}
-          displayName: Create pvc patches
 
         - powershell: |
             Get-ChildItem -Filter "*-database*username.txt" | Set-Content -NoNewLine -Value '$(SQL_USER_USERNAME)' ;
@@ -218,29 +178,8 @@ jobs:
             Set-Content -NoNewLine -Path sitecore-identitycertificate.txt -Value '$(SITECORE_ID_CERTIFICATE)' ;
             Set-Content -NoNewLine -Path sitecore-identitycertificatepassword.txt -Value '$(SITECORE_ID_CERTIFICATE_PASSWORD)' ;
             Set-Content -NoNewLine -Path sitecore-media-request-protection-shared-secret.txt -Value '$(MEDIA_REQUEST_PROTECTION_SHARED_SECRET)' ;
-
-            If ('$(SQL_SERVER)'  -notlike "`$(*)") { Set-Content -NoNewLine -Path sitecore-databaseservername.txt -Value '$(SQL_SERVER)' ; }
-            If ('$(SQL_SA_USER)' -notlike "`$(*)") { Set-Content -NoNewLine -Path sitecore-databaseusername.txt -Value '$(SQL_SA_USER)' ; }
-            If ('$(SQL_ELASTIC_POOL_NAME)' -notlike "`$(*)") { Set-Content -NoNewLine -Path sitecore-database-elastic-pool-name.txt -Value '$(SQL_ELASTIC_POOL_NAME)' ; }
-            If ('$(SOLR_CORE_PREFIX)' -notlike "`$(*)") { Set-Content -NoNewLine -Path sitecore-solr-core-prefix-name.txt -Value '$(SOLR_CORE_PREFIX)' ; }
-            If ('$(SOLR_CONNECTION)' -notlike "`$(*)") { 
-              Set-Content -NoNewLine -Path sitecore-solr-connection-string.txt -Value '$(SOLR_CONNECTION);solrCloud=true' ; 
-              Set-Content -NoNewLine -Path sitecore-solr-connection-string-xdb.txt -Value '$(SOLR_CONNECTION)/$(SOLR_XDB_CORE);solrCloud=true' ;
-            }
-
-          workingDirectory: $(Pipeline.Workspace)/manifests/sitecore/ltsc2019/xp1/secrets
+          workingDirectory: $(Pipeline.Workspace)/manifests/sitecore/ltsc2019/xm1/secrets
           displayName: Create sitecore secrets files
-
-        - powershell: |
-            Set-Content -NoNewLine -Path cli-clientid.txt     -Value '$(SITECORE_CLI_CLIENTID)' ;
-            Set-Content -NoNewLine -Path cli-clientsecret.txt -Value '$(SITECORE_CLI_CLIENTSECRET)' ;
-            Set-Content -Path 'mindkey.env' -Value ("azurestorageaccountname={0}`nazurestorageaccountkey={1}" -f '$(MindKey_StorageAccount_Name)', '$(MindKey_StorageAccount_Key)')
-            Set-Content -NoNewLine -Path mscrm-organization.txt -Value '$(MsCrm_Organization)' ;
-            Set-Content -NoNewLine -Path mscrm-url.txt -Value '$(MsCrm_Url)' ;
-            Set-Content -NoNewLine -Path mscrm-username.txt -Value '$(MsCrm_Username)' ;
-            Set-Content -NoNewLine -Path mscrm-password.txt -Value '$(MsCrm_Password)' ;
-          workingDirectory: $(Pipeline.Workspace)/manifests/bases/secrets
-          displayName: Create custom secrets files
 
         - task: Kubernetes@1
           inputs:
@@ -249,23 +188,6 @@ jobs:
             useConfigurationFile: true
             inline: '{ "kind": "Namespace", "apiVersion": "v1", "metadata": { "name": "$(names.namespace)" }}'
           displayName: 'Deploy namespace'
-
-        # - task: PublishPipelineArtifact@1
-        #   inputs:
-        #     artifact: 'deployment-$(Build.BuildNumber)-$(System.PhaseAttempt)'
-        #     path: '$(Pipeline.Workspace)/manifests/'
-        #   displayName: Publish manifests artifacts
-
-        # - task: Kubernetes@1
-        #   continueOnError: true
-        #   inputs:
-        #     connectionType: Kubernetes Service Connection
-        #     kubernetesServiceEndpoint: ${{ parameters.k8s_admin_connection }}
-        #     command: delete
-        #     namespace: $(names.namespace)
-        #     arguments: job mssql-init solr-init
-        #     outputFormat: ''
-        #   displayName: Remove old storage init containers
 
         - task: Kubernetes@1
           inputs:
@@ -276,36 +198,6 @@ jobs:
             arguments: --validate=false -k "$(Pipeline.Workspace)/manifests/overlays/${{ parameters.deploytype }}"
             outputFormat: ''
           displayName: Deploy manifest
-
-        # - task: Kubernetes@1
-        #   inputs:
-        #     connectionType: Kubernetes Service Connection
-        #     kubernetesServiceEndpoint: ${{ parameters.k8s_admin_connection }}
-        #     command: wait
-        #     namespace: $(names.namespace)
-        #     arguments: --for=condition=Available deployments solr --timeout=10m
-        #     outputFormat: ''
-        #   displayName: Wait on Solr to become available
-
-        # - task: Kubernetes@1
-        #   inputs:
-        #     connectionType: Kubernetes Service Connection
-        #     kubernetesServiceEndpoint: ${{ parameters.k8s_admin_connection }}
-        #     command: delete
-        #     namespace: $(names.namespace)
-        #     arguments: -f "$(Pipeline.Workspace)/manifests/sitecore/ltsc2019/xp1/windows/init/solr-init.yaml" --ignore-not-found=true
-        #     outputFormat: ''
-        #   displayName: Remove Solr init
-
-        # - task: Kubernetes@1
-        #   inputs:
-        #     connectionType: Kubernetes Service Connection
-        #     kubernetesServiceEndpoint: ${{ parameters.k8s_admin_connection }}
-        #     command: apply
-        #     namespace: $(names.namespace)
-        #     arguments: -f "$(Pipeline.Workspace)/manifests/sitecore/ltsc2019/xp1/windows/init/solr-init.yaml"
-        #     outputFormat: ''
-        #   displayName: Deploy Solr init
 
         - task: Kubernetes@1
           inputs:
@@ -432,6 +324,7 @@ jobs:
   dependsOn:
     - deploy
   displayName: Push items
+  condition: and(succeeded(), ne("$(SITECORE_CLI_CLIENTID)", "") )
   continueOnError: true
   pool:
     name: ${{ parameters.pool_name }}
@@ -452,8 +345,8 @@ jobs:
     displayName: Install Sitecore CLI
 
   - pwsh: |
-      $cmHost = get-content "$(Pipeline.Workspace)/manifests/sitecore/ltsc2019/xp1/configmaps/cm-hostname"
-      $idHost = get-content "$(Pipeline.Workspace)/manifests/sitecore/ltsc2019/xp1/configmaps/id-hostname"
+      $cmHost = get-content "$(Pipeline.Workspace)/manifests/sitecore/ltsc2019/xm1/configmaps/cm-hostname"
+      $idHost = get-content "$(Pipeline.Workspace)/manifests/sitecore/ltsc2019/xm1/configmaps/id-hostname"
 
       Write-Host "Logging into ID Server"
       dotnet sitecore login --client-credentials true --auth "https://${idHost}" --cm "https://${cmHost}" --allow-write true --client-id "$(SITECORE_CLI_CLIENTID)" --client-secret "$(SITECORE_CLI_CLIENTSECRET)"

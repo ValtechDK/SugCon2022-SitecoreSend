@@ -19,16 +19,16 @@ generatorOptions:
 configMapGenerator:
 - name: custom-hostnames
   files:
-  - rendering-hostname
+  - www-hostname
 
 vars:
-- name: rendering-hostname
+- name: www-hostname
   objref:
     kind: ConfigMap
     name: custom-hostnames
     apiVersion: v1
   fieldref:
-    fieldpath: data.rendering-hostname
+    fieldpath: data.www-hostname
 
 - name: cd-hostname
   objref:

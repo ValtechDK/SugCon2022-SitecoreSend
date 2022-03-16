@@ -50,14 +50,14 @@ stages:
   - images
   variables:
   - group: general
-  - group: deploy
+  - group: testing
   jobs:
   - template: templates/deploy.yml
     parameters:
       project_name: $(project_name)
       environment_name: testing
       namespace: $(namespace_prefix)-$(Build.SourceBranchName)
-      master_resource_name: $(master_resource_name))
+      master_resource_name: $(master_resource_name)
       k8s_admin_connection: $(k8s_admin_service_connection_testing)
       dns_tld: $(dns_tld)
       deploytype: nonproduction
