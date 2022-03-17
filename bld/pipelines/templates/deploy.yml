@@ -155,10 +155,12 @@ jobs:
             ("cm", "cd", "id", "www") | ForEach-Object {
               $service = "$_"
               $hostname = "{0}-{1}.{2}" -f $service, $env:NAMESPACE, $env:DNS_TLD
-              $path = "$(Pipeline.Workspace)/manifests/bases/common/www-hostname"
-              if(-not (Test-Path $path) {
-              $path = "$(Pipeline.Workspace)/manifests/sitecore/ltsc2019/xm1/configmaps/${service}-hostname"
+
+              $path = "$(Pipeline.Workspace)/manifests/bases/common/${service}-hostname"
+              if(-not (Test-Path $path)) {
+                $path = "$(Pipeline.Workspace)/manifests/sitecore/ltsc2019/xm1/configmaps/${service}-hostname"
               }
+
               Set-Content -Path (Resolve-Path $path) -Value $hostname -NoNewLine
             }
           env:
