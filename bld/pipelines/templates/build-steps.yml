@@ -37,14 +37,14 @@ steps:
   - download: current
     artifact: ${{ parameters.solution_image_artifact }}
     displayName: Download solution artifact
-    condition: ne('${{ parameters.service_names }}', 'solution')
+    condition: and(succeeded(), not(contains('${{ parameters.service_names }}', 'solution')))
 
   - pwsh: |
       $solutionDigest = Get-Content "$(Pipeline.Workspace)/${{ parameters.solution_image_artifact }}/solution-digest.txt"
       Write-Host "Set solution digest: ${solutionDigest}"
       Write-Host "##vso[task.setvariable variable=solution;isOutput=true]$solutionDigest"
     name: digest
-    condition: ne('${{ parameters.service_names }}', 'solution')
+    condition: and(succeeded(), not(contains('${{ parameters.service_names }}', 'solution')))
 
   - script: docker-compose --file ${{ parameters.compose_file }} build ${{ parameters.service_names }}
     env:
@@ -64,7 +64,7 @@ steps:
       TARGET_REGISTRY: '${{ parameters.target_docker_registry }}/'
       VERSION: $(names.version)
     displayName: Push images
-    condition: ne('${{ parameters.push_images }}', 'false')
+    condition: and(succeeded(), ne('${{ parameters.push_images }}', 'false'))
 
   - pwsh: |
       If(-not (Test-Path "$(Build.SourcesDirectory)/out")) {
