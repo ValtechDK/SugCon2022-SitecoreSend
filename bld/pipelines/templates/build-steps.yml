@@ -44,6 +44,7 @@ steps:
       Write-Host "Set solution digest: ${solutionDigest}"
       Write-Host "##vso[task.setvariable variable=solution;isOutput=true]$solutionDigest"
     name: digest
+    displayName: Set solution image variable from digest
     condition: and(succeeded(), not(contains('${{ parameters.service_names }}', 'solution')))
 
   - script: docker-compose --file ${{ parameters.compose_file }} build ${{ parameters.service_names }}
@@ -82,7 +83,7 @@ steps:
       TARGET_REGISTRY: '${{ parameters.target_docker_registry }}/'
       VERSION: $(names.version)
     displayName: Save image digests
-    condition: ne('${{ parameters.push_images }}', 'false')
+    condition: and(succeeded(), ne('${{ parameters.push_images }}', 'false'))
 
   - task: PublishPipelineArtifact@1
     inputs:

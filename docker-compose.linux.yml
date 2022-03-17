@@ -1,14 +1,14 @@
 services:
 
   redis:
-    image: ${TARGET_REGISTRY}${COMPOSE_PROJECT_NAME}-redis:${VERSION:-latest}
+    image: ${TARGET_REGISTRY}${PROJECT_NAME}-redis:${VERSION:-latest}
     build:
       context: ./docker/build/external
       args:
         BASE_IMAGE: redis:4.0.14-alpine
 
   mssql:
-    image: ${TARGET_REGISTRY}${COMPOSE_PROJECT_NAME}-mssql:${VERSION:-latest}
+    image: ${TARGET_REGISTRY}${PROJECT_NAME}-mssql:${VERSION:-latest}
     build:
       context: ./docker/build/external
       args:
