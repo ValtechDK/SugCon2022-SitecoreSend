@@ -5,7 +5,7 @@ services:
   # A servercore image with both the netcore and netframework SDKs.
   # See Dockerfile for more details.
   dotnetsdk:
-    image: ${REGISTRY}${COMPOSE_PROJECT_NAME}-dotnetsdk:${VERSION:-latest}
+    image: ${TARGET_REGISTRY}${PROJECT_NAME}-dotnetsdk:${VERSION:-latest}
     build:
       context: ./docker/build/dotnetsdk
     scale: 0
@@ -14,13 +14,13 @@ services:
   # for the images which use its output. Setting "scale: 0" means docker-compose will not
   # include it in the running environment. See Dockerfile for more details.
   solution:
-    image: ${REGISTRY}${COMPOSE_PROJECT_NAME}-solution:${VERSION:-latest}
+    image: ${TARGET_REGISTRY}${PROJECT_NAME}-solution:${VERSION:-latest}
     build:
       context: .
       dockerfile: docker/build/solution/Dockerfile
       args:
         BUILD_CONFIGURATION: ${BUILD_CONFIGURATION}
-        BUILD_IMAGE: ${REGISTRY}${COMPOSE_PROJECT_NAME}-dotnetsdk:${VERSION:-latest}
+        BUILD_IMAGE: ${TARGET_REGISTRY}${PROJECT_NAME}-dotnetsdk:${VERSION:-latest}
     depends_on:
       - dotnetsdk
     scale: 0
@@ -29,13 +29,13 @@ services:
   # If target is 'debug', it will use the SDK image as parent and run 'dotnet watch.'
   # Otherwise, it's a standard ASP.NET Core container. See Dockerfile for details.
   rendering:
-    image: ${REGISTRY}${COMPOSE_PROJECT_NAME}-rendering:${VERSION:-latest}
+    image: ${TARGET_REGISTRY}${PROJECT_NAME}-rendering:${VERSION:-latest}
     build:
       context: ./docker/build/rendering
       target: ${BUILD_CONFIGURATION}
       args:
-        DEBUG_PARENT_IMAGE: ${REGISTRY}${COMPOSE_PROJECT_NAME}-dotnetsdk:${VERSION:-latest}
-        SOLUTION_IMAGE: ${REGISTRY}${COMPOSE_PROJECT_NAME}-solution:${VERSION:-latest}
+        DEBUG_PARENT_IMAGE: ${TARGET_REGISTRY}${PROJECT_NAME}-dotnetsdk:${VERSION:-latest}
+        SOLUTION_IMAGE: ${TARGET_REGISTRY}${PROJECT_NAME}-solution:${VERSION:-latest}
     depends_on:
       - solution
       - cm
@@ -43,7 +43,7 @@ services:
   # Mount our SQL data folder and use our custom image with the Headless Services (JSS)
   # module data added. See Dockerfile for details.
   mssql-init:
-    image: ${REGISTRY}${COMPOSE_PROJECT_NAME}-mssql-init:${VERSION:-latest}
+    image: ${TARGET_REGISTRY}${PROJECT_NAME}-mssql-init:${VERSION:-latest}
     build:
       context: ./docker/build/mssql-init
       args:
@@ -54,7 +54,7 @@ services:
   # Mount our Solr data folder and use our retagged Solr image.
   # Some modules (like SXA) also require additions to the Solr image.
   solr-init:
-    image: ${REGISTRY}${COMPOSE_PROJECT_NAME}-solr-init:${VERSION:-latest}
+    image: ${TARGET_REGISTRY}${PROJECT_NAME}-solr-init:${VERSION:-latest}
     build:
       context: ./docker/build/solr-init
       args:
@@ -63,7 +63,7 @@ services:
   # Use our retagged Identity Server image.
   # Configure for a mounted license file instead of using SITECORE_LICENSE.
   id:
-    image: ${REGISTRY}${COMPOSE_PROJECT_NAME}-id:${VERSION:-latest}
+    image: ${TARGET_REGISTRY}${PROJECT_NAME}-id:${VERSION:-latest}
     build:
       context: ./docker/build/id
       args:
@@ -73,12 +73,12 @@ services:
   # Folders are mounted below for code deployment and log output. See Dockerfile for details.
   # Configure for a mounted license file instead of using SITECORE_LICENSE.
   cm:
-    image: ${REGISTRY}${COMPOSE_PROJECT_NAME}-cm:${VERSION:-latest}
+    image: ${TARGET_REGISTRY}${PROJECT_NAME}-cm:${VERSION:-latest}
     build:
       context: ./docker/build/cm
       args:
         PARENT_IMAGE: ${SITECORE_DOCKER_REGISTRY}sitecore-xm1-cm:${SITECORE_VERSION}
-        SOLUTION_IMAGE: ${REGISTRY}${COMPOSE_PROJECT_NAME}-solution:${VERSION:-latest}
+        SOLUTION_IMAGE: ${TARGET_REGISTRY}${PROJECT_NAME}-solution:${VERSION:-latest}
         TOOLS_IMAGE: ${TOOLS_IMAGE}
         MANAGEMENT_SERVICES_IMAGE: ${MANAGEMENT_SERVICES_IMAGE}
         HEADLESS_SERVICES_IMAGE: ${HEADLESS_SERVICES_IMAGE}
