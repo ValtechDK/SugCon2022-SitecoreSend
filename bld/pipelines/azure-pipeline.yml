@@ -60,7 +60,7 @@ stages:
       project_name: $(project_name)
       environment_name: testing
       namespace: sugcon-send-$(Build.SourceBranchName)
-      master_resource_name: sugcon-send-main
+      master_resource_name: ${{ variables.master_resource_name }}
       k8s_admin_connection: aksdc1-admin
       dns_tld: ${{ variables.dns_tld }}
       deploytype: nonproduction
