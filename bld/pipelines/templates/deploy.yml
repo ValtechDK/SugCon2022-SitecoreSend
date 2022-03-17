@@ -36,7 +36,7 @@ jobs:
   pool:
     name: ${{ parameters.pool_name }}
     vmImage: ${{ parameters.pool_vm }}
-  environment: '${{ parameters.environment_name }}.${{ parameters.namespace }}'
+  environment: '${{ parameters.environment_name }}.$(resourceName)'
   strategy:
     runOnce:
       deploy:
