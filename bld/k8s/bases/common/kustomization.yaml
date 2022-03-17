@@ -5,10 +5,10 @@ bases:
 - ../../sitecore/ltsc2019/xm1/secrets
 - ../../sitecore/ltsc2019/xm1/configmaps
 - ../../sitecore/ltsc2019/xm1/init
+- ../../sitecore/ltsc2019/xm1/volumes/azurefile
 - ../../sitecore/ltsc2019/xm1
 
 resources:
-- ../../sitecore/ltsc2019/xm1/volumes/azurefile/logs.yaml
 - ingress.yaml
 - ingress-configuration.yaml
 - letsencrypt-issuer.yaml
