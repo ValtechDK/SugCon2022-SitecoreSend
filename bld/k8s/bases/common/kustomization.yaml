@@ -45,6 +45,8 @@ patches:
       kind: Deployment
       name: cm
 
+  # We use tolerations to actively allow Windows containers and
+  # prevent linux containers without nodeSelector to be scheduled on Windows nodes
   - path: ./patch.tolerations.yaml
     target:
       kind: Deployment
