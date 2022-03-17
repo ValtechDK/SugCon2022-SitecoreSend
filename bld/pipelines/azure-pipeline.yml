@@ -23,12 +23,12 @@ stages:
   jobs:
   - template: templates/build-solution.yml
     parameters:
-      project_name: ${{ variables.project_name }}
+      project_name: $(project_name)
       version_tag: $(version_tag)
-      target_docker_registry: ${{ variables.target_docker_registry }}
+      target_docker_registry: $(target_docker_registry)
       push_image: 'true'
-      windows_pool_name: ${{ variables.windows_pool_name }}
-      windows_pool_vm: ${{ variables.windows_pool_vm }}
+      windows_pool_name: $(windows_pool_name)
+      windows_pool_vm: $(windows_pool_vm)
 
 - stage: images
   displayName: Build images
@@ -37,15 +37,15 @@ stages:
   jobs:
   - template: templates/build-images.yml
     parameters:
-      project_name: ${{ variables.project_name }}
+      project_name: $(project_name)
       version_tag: $(version_tag)
-      target_docker_registry: ${{ variables.target_docker_registry }}
-      windows_pool_name: ${{ variables.windows_pool_name }}
-      windows_pool_vm: ${{ variables.windows_pool_vm }}
-      linux_pool_name: ${{ variables.linux_pool_name }}
-      linux_pool_vm: ${{ variables.linux_pool_vm }}
-      deploy_pool_name: ${{ variables.deploy_pool_name }}
-      deploy_pool_vm: ${{ variables.deploy_pool_vm }}
+      target_docker_registry: $(target_docker_registry)
+      windows_pool_name: $(windows_pool_name)
+      windows_pool_vm: $(windows_pool_vm)
+      linux_pool_name: $(linux_pool_name)
+      linux_pool_vm: $(linux_pool_vm)
+      deploy_pool_name: $(deploy_pool_name)
+      deploy_pool_vm: $(deploy_pool_vm)
 
 - stage: deploy
   displayName: deploy
@@ -64,5 +64,5 @@ stages:
       k8s_admin_connection: aksdc1-admin
       dns_tld: ${{ variables.dns_tld }}
       deploytype: nonproduction
-      pool_name: ${{ variables.deploy_pool_name }}
-      pool_vm: ${{ variables.deploy_pool_vm }}
+      pool_name: $(deploy_pool_name)
+      pool_vm: $(deploy_pool_vm)
