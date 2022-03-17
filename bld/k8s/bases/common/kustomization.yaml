@@ -12,6 +12,7 @@ resources:
 - ingress.yaml
 - ingress-configuration.yaml
 - letsencrypt-issuer.yaml
+- rendering.yaml
 
 generatorOptions:
   disableNameSuffixHash: true
