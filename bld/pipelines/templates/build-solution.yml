@@ -33,6 +33,6 @@ jobs:
       version_tag: $(version_tag)
       target_docker_registry: $(target_docker_registry)
       compose_file: docker-compose.yml
-      service_names: solution
+      service_names: dotnetsdk solution
       artifact_name: ${{ parameters.solution_image_artifact }}
       push_images: ${{ parameters.push_image }}

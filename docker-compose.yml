@@ -25,21 +25,6 @@ services:
       - dotnetsdk
     scale: 0
 
-  # This is our custom image for an ASP.NET Core Rendering Host.
-  # If target is 'debug', it will use the SDK image as parent and run 'dotnet watch.'
-  # Otherwise, it's a standard ASP.NET Core container. See Dockerfile for details.
-  rendering:
-    image: ${TARGET_REGISTRY}${PROJECT_NAME}-rendering:${VERSION:-latest}
-    build:
-      context: ./docker/build/rendering
-      target: ${BUILD_CONFIGURATION}
-      args:
-        DEBUG_PARENT_IMAGE: ${TARGET_REGISTRY}${PROJECT_NAME}-dotnetsdk:${VERSION:-latest}
-        SOLUTION_IMAGE: ${TARGET_REGISTRY}${PROJECT_NAME}-solution:${VERSION:-latest}
-    depends_on:
-      - solution
-      - cm
-
   # Mount our SQL data folder and use our custom image with the Headless Services (JSS)
   # module data added. See Dockerfile for details.
   mssql-init:
@@ -84,3 +69,18 @@ services:
         HEADLESS_SERVICES_IMAGE: ${HEADLESS_SERVICES_IMAGE}
     depends_on:
       - solution
+
+  # This is our custom image for an ASP.NET Core Rendering Host.
+  # If target is 'debug', it will use the SDK image as parent and run 'dotnet watch.'
+  # Otherwise, it's a standard ASP.NET Core container. See Dockerfile for details.
+  rendering:
+    image: ${TARGET_REGISTRY}${PROJECT_NAME}-rendering:${VERSION:-latest}
+    build:
+      context: ./docker/build/rendering
+      target: ${BUILD_CONFIGURATION}
+      args:
+        DEBUG_PARENT_IMAGE: ${TARGET_REGISTRY}${PROJECT_NAME}-dotnetsdk:${VERSION:-latest}
+        SOLUTION_IMAGE: ${TARGET_REGISTRY}${PROJECT_NAME}-solution:${VERSION:-latest}
+    depends_on:
+      - solution
+      - cm

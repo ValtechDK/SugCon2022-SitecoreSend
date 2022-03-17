@@ -38,22 +38,12 @@ jobs:
       Windows_cm:
         POOL_NAME: '${{ parameters.windows_pool_name }}'
         POOL_VM: '${{ parameters.windows_pool_vm }}'
-        SERVICE_NAMES: 'cm id'
-        COMPOSE_FILE: docker-compose.yml
-      Windows_cd:
-        POOL_NAME: '${{ parameters.windows_pool_name }}'
-        POOL_VM: '${{ parameters.windows_pool_vm }}'
-        SERVICE_NAMES: 'cd'
+        SERVICE_NAMES: 'cm id rendering'
         COMPOSE_FILE: docker-compose.yml
       Windows_inits:
         POOL_NAME: '${{ parameters.windows_pool_name }}'
         POOL_VM: '${{ parameters.windows_pool_vm }}'
         SERVICE_NAMES: 'mssql-init solr-init'
-        COMPOSE_FILE: docker-compose.yml
-      Windows_xp:
-        POOL_NAME: '${{ parameters.windows_pool_name }}'
-        POOL_VM: '${{ parameters.windows_pool_vm }}'
-        SERVICE_NAMES: 'xconnect xdbautomationworker xdbsearchworker cortexprocessingworker'
         COMPOSE_FILE: docker-compose.yml
       # Windows_docs:
       #   POOL_NAME: '${{ parameters.windows_pool_name }}'
