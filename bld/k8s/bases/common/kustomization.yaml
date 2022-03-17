@@ -44,3 +44,10 @@ patches:
     target:
       kind: Deployment
       name: cm
+
+  - path: ./patch.tolerations.yaml
+    target:
+      kind: Deployment
+  - path: ./patch.tolerations.yaml
+    target:
+      kind: Job
