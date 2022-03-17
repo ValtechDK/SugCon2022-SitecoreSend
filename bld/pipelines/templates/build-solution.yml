@@ -27,10 +27,6 @@ jobs:
   steps:
   - checkout: self
 
-  - pwsh: |
-      Set-Content -Path src/Project/Platform/code/version.txt -Value "$(Build.BuildNumber)"
-    displayName: Add version.txt file
-    
   - template: build-steps.yml
     parameters:
       project_name: ${{ variables.project_name }}
@@ -40,23 +36,3 @@ jobs:
       service_names: solution
       artifact_name: ${{ parameters.solution_image_artifact }}
       push_images: ${{ parameters.push_image }}
-
-  - pwsh: |
-      $registry = "${env:TARGET_REGISTRY}"
-      if($registry -ne "") { $registry = "${registry}/" }
-      $solutionTag = ("{0}{1}-{2}:{3}" -f $registry, $env:PROJECT_NAME, "solution", $env:VERSION)
-      Write-Host "Create container ${solutionTag}"
-      $containerId = $(docker create $solutionTag)
-      docker cp ${containerId}:c:\artifacts\docs "$(Build.ArtifactStagingDirectory)\docs"
-      docker rm $containerId
-    displayName: Extract artifacts
-    env:
-      PROJECT_NAME: ${{ variables.project_name }}
-      TARGET_REGISTRY: $(target_docker_registry)
-      VERSION: $(names.version)
-
-  - task: PublishPipelineArtifact@1
-    inputs:
-      artifact: docs
-      path: '$(Build.ArtifactStagingDirectory)\docs'
-    displayName: Publish docs artifacts
