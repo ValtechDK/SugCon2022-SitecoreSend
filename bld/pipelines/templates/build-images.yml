@@ -38,23 +38,22 @@ jobs:
       Windows_cm:
         POOL_NAME: '${{ parameters.windows_pool_name }}'
         POOL_VM: '${{ parameters.windows_pool_vm }}'
-        SERVICE_NAMES: 'cm id rendering'
+        SERVICE_NAMES: 'cm id'
+        COMPOSE_FILE: docker-compose.yml
+      Windows_www:
+        POOL_NAME: '${{ parameters.windows_pool_name }}'
+        POOL_VM: '${{ parameters.windows_pool_vm }}'
+        SERVICE_NAMES: 'rendering'
         COMPOSE_FILE: docker-compose.yml
       Windows_inits:
         POOL_NAME: '${{ parameters.windows_pool_name }}'
         POOL_VM: '${{ parameters.windows_pool_vm }}'
         SERVICE_NAMES: 'mssql-init solr-init'
         COMPOSE_FILE: docker-compose.yml
-      # Windows_docs:
-      #   POOL_NAME: '${{ parameters.windows_pool_name }}'
-      #   POOL_VM: '${{ parameters.windows_pool_vm }}'
-      #   SERVICE_NAMES: 'docs'
-      #   COMPOSE_FILE: docker-compose.yml
       Linux_external:
         POOL_NAME: '${{ parameters.linux_pool_name }}'
         POOL_VM: '${{ parameters.linux_pool_vm }}'
-        POOL_OS: Linux
-        SERVICE_NAMES: 'mssql solr redis mailserver'
+        SERVICE_NAMES: 'mssql solr'
         COMPOSE_FILE: docker-compose.linux.yml
 
   pool:
