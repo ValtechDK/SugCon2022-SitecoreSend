@@ -26,6 +26,9 @@ parameters:
 - name: kubectl_version
   type: string
   default:  1.23.4
+- name: hostname_services
+  type: string
+  default: cm id cd www
 
 jobs:
 - deployment: deploy
@@ -152,7 +155,7 @@ jobs:
 # /dynamic environment resource steps (ReviewApp@0 workarounds)
 
         - powershell: |
-            ("cm", "cd", "id", "www") | ForEach-Object {
+            "${{parameters.hostname_services }}" -split " " | ForEach-Object {
               $service = "$_"
               $hostname = "{0}-{1}.{2}" -f $service, $env:NAMESPACE, $env:DNS_TLD
 
