@@ -42,10 +42,10 @@ stages:
       target_docker_registry: $(target_docker_registry)
       windows_pool_name: $(windows_pool_name)
       windows_pool_vm: $(windows_pool_vm)
-      linux_pool_name: $(linux_pool_name)
-      linux_pool_vm: $(linux_pool_vm)
-      deploy_pool_name: $(deploy_pool_name)
-      deploy_pool_vm: $(deploy_pool_vm)
+      # linux_pool_name: $(linux_pool_name)
+      # linux_pool_vm: $(linux_pool_vm)
+      # deploy_pool_name: $(deploy_pool_name)
+      # deploy_pool_vm: $(deploy_pool_vm)
 
 - stage: deploy
   displayName: deploy
