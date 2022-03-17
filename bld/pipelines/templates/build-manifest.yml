@@ -53,7 +53,7 @@ steps:
         $sha = $parts[1]
 
         $imgName = $serviceName
-        if($serviceName -match "cd|cm|id") {
+        if($serviceName -match "cd|cm|id|solr-init|mssql-init") {
           $imgName = "sitecore-xm1-${serviceName}"
         }
 
