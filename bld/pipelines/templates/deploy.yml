@@ -140,18 +140,18 @@ jobs:
             Write-Host "##vso[task.setvariable variable=master_resource_k8s_service_account]$account"
           displayName: Set master service account
 
-        - task: ReviewApp@0
-          inputs:
-            resourceName: ${{ parameters.master_resource_name }}
-          displayName: Deploy dynamic environment resource
+        # - task: ReviewApp@0
+        #   inputs:
+        #     resourceName: ${{ parameters.master_resource_name }}
+        #   displayName: Deploy dynamic environment resource
 
-        - task: Kubernetes@1
-          inputs:
-            kubernetesServiceEndpoint: ${{ parameters.k8s_admin_connection }}
-            command: apply
-            useConfigurationFile: true
-            inline: '{ "apiVersion": "rbac.authorization.k8s.io/v1", "kind": "RoleBinding", "metadata": { "name": "$(names.namespace)-view", "namespace": "$(names.namespace)" }, "roleRef": { "apiGroup": "rbac.authorization.k8s.io", "kind": "ClusterRole", "name": "view" }, "subjects": [ { "kind": "ServiceAccount", "name": "$(master_resource_k8s_service_account)", "namespace": "${{ parameters.master_resource_name }}" } ] }'
-          displayName: Deploy rolebinding for dynamic environment resource
+        # - task: Kubernetes@1
+        #   inputs:
+        #     kubernetesServiceEndpoint: ${{ parameters.k8s_admin_connection }}
+        #     command: apply
+        #     useConfigurationFile: true
+        #     inline: '{ "apiVersion": "rbac.authorization.k8s.io/v1", "kind": "RoleBinding", "metadata": { "name": "$(names.namespace)-view", "namespace": "$(names.namespace)" }, "roleRef": { "apiGroup": "rbac.authorization.k8s.io", "kind": "ClusterRole", "name": "view" }, "subjects": [ { "kind": "ServiceAccount", "name": "$(master_resource_k8s_service_account)", "namespace": "${{ parameters.master_resource_name }}" } ] }'
+        #   displayName: Deploy rolebinding for dynamic environment resource
 # /dynamic environment resource steps (ReviewApp@0 workarounds)
 
         - powershell: |
