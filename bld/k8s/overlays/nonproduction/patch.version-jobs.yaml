@@ -1,0 +1,12 @@
+- op: add
+  path: /metadata/labels
+  value: 
+    version: 1.0-version
+    customer: sugcon
+
+- op: add
+  path: /spec/template/metadata
+  value: 
+    labels:
+      version: 1.0-version
+      customer: sugcon

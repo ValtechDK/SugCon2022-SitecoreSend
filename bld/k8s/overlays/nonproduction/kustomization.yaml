@@ -4,3 +4,11 @@ kind: Kustomization
 bases:
 - ../../bases/common
 - ../../sitecore/ltsc2019/xm1/external
+
+patches:
+  - path: ./patch.version-deployments.yaml
+    target:
+      kind: Deployment
+  - path: ./patch.version-jobs.yaml
+    target:
+      kind: Job

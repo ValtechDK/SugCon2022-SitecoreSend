@@ -171,6 +171,22 @@ jobs:
             DNS_TLD: ${{ parameters.dns_tld }}
           displayName: Create hostname configmap
 
+        - pwsh: |
+            @("patch.version-deployments", "patch.version-jobs") | ForEach-Object {
+              $versionFilePath = Resolve-Path ("$(Pipeline.Workspace)/manifests/overlays/nonproduction/{0}.yaml" -f $_)
+              $content = Get-Content $versionFilePath
+              $newContent = $content.Replace("1.0-version", "$(Build.BuildNumber)")
+              if($content -eq $newContent) {
+                Write-Warning "Could not replace version in file ${versionFilePath}: `n${content}"
+              } else {
+                Set-Content -Path $versionFilePath -Value $newContent
+                Write-Host "Replaced version in $versionFilePath"
+              }
+            }
+
+            Copy-Item "$(Pipeline.Workspace)/manifests/overlays/common-patches/*.yaml" "$(Pipeline.Workspace)/manifests/overlays/${{ parameters.deploytype }}/" -Verbose -Force
+          displayName: Create version patch files
+
         - powershell: |
             Get-ChildItem -Filter "*-database*username.txt" | Set-Content -NoNewLine -Value '$(SQL_USER_USERNAME)' ;
             Get-ChildItem -Filter "*-database*password.txt" | Set-Content -NoNewLine -Value '$(SQL_USER_PASSWORD)';
