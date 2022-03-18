@@ -1,0 +1,16 @@
+- op: add
+  path: /spec/template/spec/containers/0/env/-
+  value:
+    name: Sitecore_Sitecore__IdentityServer__Clients__CliClient__ClientId
+    valueFrom:
+      secretKeyRef:
+        name: sitecore-id-cli
+        key: cli-clientid.txt
+- op: add
+  path: /spec/template/spec/containers/0/env/-
+  value:
+    name: Sitecore_Sitecore__IdentityServer__Clients__CliClient__ClientSecrets__ClientSecret1
+    valueFrom:
+      secretKeyRef:
+        name: sitecore-id-cli
+        key: cli-clientsecret.txt

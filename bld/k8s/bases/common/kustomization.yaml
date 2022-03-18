@@ -22,6 +22,12 @@ configMapGenerator:
   files:
   - www-hostname
 
+secretGenerator:
+- name: sitecore-id-cli
+  files:
+  - cli-clientid.txt
+  - cli-clientsecret.txt
+
 vars:
 - name: www-hostname
   objref:
@@ -45,3 +51,14 @@ patches:
   - path: ./patch.tolerations.yaml
     target:
       kind: Job
+
+  # Sitecore CLI
+  - path: ./patch.id-cli.yaml
+    target:
+      kind: Deployment
+      name: id
+  - path: ./patch.cm-cli.yaml
+    target:
+      kind: Deployment
+      name: id
+

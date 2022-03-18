@@ -87,6 +87,8 @@ services:
       Sitecore_Sitecore__IdentityServer__CertificateRawData: ${SITECORE_ID_CERTIFICATE}
       Sitecore_Sitecore__IdentityServer__PublicOrigin: https://${ID_HOST}
       Sitecore_Sitecore__IdentityServer__CertificateRawDataPassword: ${SITECORE_ID_CERTIFICATE_PASSWORD}
+      Sitecore_Sitecore__IdentityServer__Clients__CliClient__ClientId: ${SITECORE_CLI_CLIENTID}
+      Sitecore_Sitecore__IdentityServer__Clients__CliClient__ClientSecrets__ClientSecret1: ${SITECORE_CLI_CLIENTSECRET}
       Sitecore_License: ${SITECORE_LICENSE}
       SITECORE_LICENSE_LOCATION: c:\license\license.xml
     healthcheck:
@@ -126,6 +128,7 @@ services:
       SITECORE_LICENSE_LOCATION: c:\license\license.xml
       RENDERING_HOST_PUBLIC_URI: "https://${RENDERING_HOST}"
       SITE_HOSTNAME: ${CM_HOST}
+      Sitecore_CliClient_ClientId: ${SITECORE_CLI_CLIENTID}
       SITECORE_DEVELOPMENT_PATCHES: DevEnvOn,CustomErrorsOff,HttpErrorsDetailed,DebugOn,DiagnosticsOff,InitMessagesOff,RobotDetectionOff
     entrypoint: powershell.exe -Command "& C:\tools\entrypoints\iis\Development.ps1"
     # healthcheck:

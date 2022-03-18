@@ -186,6 +186,12 @@ jobs:
           workingDirectory: $(Pipeline.Workspace)/manifests/sitecore/ltsc2019/xm1/secrets
           displayName: Create sitecore secrets files
 
+        - powershell: |
+            Set-Content -NoNewLine -Path cli-clientid.txt     -Value '$(SITECORE_CLI_CLIENTID)' ;
+            Set-Content -NoNewLine -Path cli-clientsecret.txt -Value '$(SITECORE_CLI_CLIENTSECRET)' ;
+          workingDirectory: $(Pipeline.Workspace)/manifests/bases/common
+          displayName: Create custom secrets files
+
         - task: Kubernetes@1
           inputs:
             kubernetesServiceEndpoint: ${{ parameters.k8s_admin_connection }}
@@ -360,17 +366,9 @@ jobs:
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
 
   - pwsh: |
-      dotnet sitecore ser push --publish --exclude Plesner.Project.Content --verbose --trace
+      dotnet sitecore ser push --publish --verbose --trace
     displayName: Publish items
     continueOnError: true
-    env:
-      DOTNET_CLI_TELEMETRY_OPTOUT: 1
-
-  - pwsh: |
-      dotnet sitecore ser push --publish --include Plesner.Project.Content --verbose --trace
-    displayName: Publish content
-    continueOnError: true
-    condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/feature/master'))
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: 1
 

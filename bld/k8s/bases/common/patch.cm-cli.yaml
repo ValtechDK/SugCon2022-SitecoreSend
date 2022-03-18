@@ -1,0 +1,8 @@
+- op: add
+  path: /spec/template/spec/containers/0/env/-
+  value:
+    name: Sitecore_CliClient_ClientId
+    valueFrom:
+      secretKeyRef:
+        name: sitecore-id-cli
+        key: cli-clientid.txt
