@@ -70,6 +70,20 @@ steps:
     }
   displayName: Include image digests in overlays
 
+- pwsh: |
+    @("patch.version-deployments", "patch.version-jobs") | ForEach-Object {
+      $versionFilePath = Resolve-Path ("bld/k8s/overlays/nonproduction/{0}.yaml" -f $_)
+      $content = Get-Content $versionFilePath
+      $newContent = $content.Replace("1.0-version", "$(Build.BuildNumber)")
+      if($content -eq $newContent) {
+        Write-Warning "Could not replace version in file ${versionFilePath}: `n${content}"
+      } else {
+        Set-Content -Path $versionFilePath -Value $newContent
+        Write-Host "Replaced version in $versionFilePath"
+      }
+    }
+  displayName: Create version patch files
+
 - task: PublishPipelineArtifact@1
   inputs:
     artifact: 'manifests'
