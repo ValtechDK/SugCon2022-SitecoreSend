@@ -33,8 +33,6 @@ jobs:
 
 - job: build_images
   displayName: Build images
-  dependsOn:
-  - build_solution
   strategy:
     matrix:
       Windows_cm:
