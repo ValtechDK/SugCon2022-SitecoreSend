@@ -33,6 +33,8 @@ jobs:
 
 - job: build_images
   displayName: Build images
+  dependsOn:
+  - build_solution
   strategy:
     matrix:
       Windows_cm:
@@ -43,7 +45,7 @@ jobs:
       Windows_www:
         POOL_NAME: '${{ parameters.windows_pool_name }}'
         POOL_VM: '${{ parameters.windows_pool_vm }}'
-        SERVICE_NAMES: 'rendering'
+        SERVICE_NAMES: 'cd rendering'
         COMPOSE_FILE: docker-compose.yml
       Windows_inits:
         POOL_NAME: '${{ parameters.windows_pool_name }}'
