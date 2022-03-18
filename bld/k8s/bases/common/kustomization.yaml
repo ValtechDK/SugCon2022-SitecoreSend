@@ -31,15 +31,6 @@ vars:
   fieldref:
     fieldpath: data.www-hostname
 
-- name: cd-hostname
-  objref:
-    kind: ConfigMap
-    name: sitecore-hostnames
-    apiVersion: v1
-  fieldref:
-    fieldpath: data.cd-hostname
-
-
 patches:
   - path: ./patch.cm-rendering.yaml
     target:

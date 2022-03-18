@@ -14,16 +14,6 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: $(cd-hostname)
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: cd
-                port:
-                  number: 80
     - host: $(cm-hostname)
       http:
         paths:
@@ -58,7 +48,6 @@ spec:
   tls:
   - hosts:
     - $(cm-hostname)
-    - $(cd-hostname)
     - $(id-hostname)
     - $(www-hostname)
     secretName: letsencrypt-tls-sitecore

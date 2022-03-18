@@ -43,7 +43,7 @@ jobs:
       Windows_www:
         POOL_NAME: '${{ parameters.windows_pool_name }}'
         POOL_VM: '${{ parameters.windows_pool_vm }}'
-        SERVICE_NAMES: 'cd rendering'
+        SERVICE_NAMES: 'rendering'
         COMPOSE_FILE: docker-compose.yml
       Windows_inits:
         POOL_NAME: '${{ parameters.windows_pool_name }}'

@@ -100,6 +100,18 @@ function GenerateKustomizationFileForFolder {
     $content | Out-File -FilePath $resultFile -Encoding utf8 -Force
 }
 
+function RemoveLine {
+    param(
+        $Path,
+        $Line
+    )
+
+    $content = get-content $Path -Raw
+    $content = $content -replace "\n\s*${Line}\s*\n", "`n"
+    Set-Content -Path "${Path}" -Value $content -Encoding UTF8
+
+}
+
 
 $sitecoreDestination = "${DestinationRoot}/${Platform}/${Topology}"
 
@@ -120,6 +132,7 @@ if (-not $SkipCorrections) {
     }
 
     RemoveBases -Path (Resolve-path $sitecoreDestination\kustomization.yaml)
+    RemoveLine -Path  (Resolve-path $sitecoreDestination\kustomization.yaml) -Line "- cd.yaml"
     RemoveTlsSecretEntries -Path (Resolve-Path $sitecoreDestination\secrets\kustomization.yaml)
     GenerateKustomizationFileForFolder -Path (Resolve-Path ${sitecoreDestination}\volumes\azurefile)
 }

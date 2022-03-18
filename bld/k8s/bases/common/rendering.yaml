@@ -34,7 +34,7 @@ spec:
         - containerPort: 80
         env:
         - name: Sitecore__InstanceUri
-          value: https://$(cd-hostname)
+          value: https://$(cm-hostname)
         - name: Sitecore__RenderingHostUri
           value: https://$(www-hostname)
         - name: Sitecore__EnableExperienceEditor
