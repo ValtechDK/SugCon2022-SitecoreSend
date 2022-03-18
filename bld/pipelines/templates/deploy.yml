@@ -260,6 +260,7 @@ jobs:
             arguments: status deployment cm --watch=true --timeout=30m
             outputFormat: ''
           displayName: Wait on CM deployment
+          continueOnError: true
 
         - pwsh: |
             Start-Sleep -Seconds 30
