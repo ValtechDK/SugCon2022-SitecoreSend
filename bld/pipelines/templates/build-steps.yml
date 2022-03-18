@@ -52,7 +52,7 @@ steps:
       PROJECT_NAME: ${{ parameters.project_name }}
       TARGET_REGISTRY: '${{ parameters.target_docker_registry }}/'
       VERSION: $(names.version)
-      CONFIGURATION: Release
+      BUILD_CONFIGURATION: Release
       BUILD_TARGET: production
       NUGET_VALTECHDK_PAT: $(System.AccessToken)
       SITECORE_REGISTRY: $(SITECORE_REGISTRY)
