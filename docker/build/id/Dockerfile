@@ -1,7 +1,7 @@
 # escape=`
 
-ARG BASE_IMAGE
+ARG PARENT_IMAGE
 
-FROM ${BASE_IMAGE}
+FROM ${PARENT_IMAGE}
 
 ADD *.xml ./config/
