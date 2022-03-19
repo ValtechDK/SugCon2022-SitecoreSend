@@ -1,0 +1,15 @@
+﻿@model NewsletterModel
+
+<div>
+    <h1 class="contentTitle">@Model.Title</h1>
+    <div class="contentDescription">
+        @Model.Text
+    </div>
+    @foreach (var article in Model.Articles)
+    {
+        <div>
+            <h2>@article.Title</h2>
+            <div class="contentDescription">@article.Text</div>
+    </div>
+    }
+</div>
