@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SugCon.SitecoreSend.Models;
 using SugCon.SitecoreSend.Services;
+using System;
 using System.Threading.Tasks;
 
 namespace SugCon.SitecoreSend.Controllers
 {
-    [ApiController]
     public class SubscribeController : Controller
     {
         private readonly ISendService _service;
@@ -18,8 +18,16 @@ namespace SugCon.SitecoreSend.Controllers
         [Route("/subscribe/{listId}"), HttpPost]
         public async Task<IActionResult> Index(string listId, MooSendSubscriber subscriber)
         {
-            await _service.Subscribe(listId, subscriber);
-            return Redirect("/?subscribe=ok");
+            try
+            {
+                await _service.Subscribe(listId, subscriber);
+                return Redirect("/?subscribe=ok");
+            }
+            catch (Exception exc)
+            {
+                return Redirect($"/?subscribe=error&error={exc.Message})");
+
+            }
         }
     }
 

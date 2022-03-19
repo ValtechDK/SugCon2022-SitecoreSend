@@ -64,8 +64,8 @@ namespace SugCon.SitecoreSend
                     //Register your components here
                     options
                         .AddModelBoundView<ContentBlockModel>("ContentBlock")
-                        //.AddViewComponent("SubscribeForm")
-                        .AddModelBoundView<SubscribeFormModel>("SubscribeForm")
+                        .AddViewComponent("SubscribeForm")
+                        //.AddModelBoundView<SubscribeFormModel>("SubscribeForm")
                         .AddDefaultPartialView("_ComponentNotFound");
                 })
                 // Includes forwarding of Scheme as X-Forwarded-Proto to the Layout Service, so that

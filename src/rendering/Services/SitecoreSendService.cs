@@ -24,8 +24,8 @@ namespace SugCon.SitecoreSend.Services
         public SitecoreSendService(ILogger<SitecoreSendService> logger, SitecoreOptions options)
         {
             _logger = logger;
-            _client = new HttpClient();
             _apiKey = options.SitecoreSendApiKey;
+            _client = new HttpClient();
         }
 
         public void Dispose()
@@ -42,10 +42,15 @@ namespace SugCon.SitecoreSend.Services
 
         public async Task Subscribe(string listId, MooSendSubscriber subscriber)
         {
-            var content = JsonConvert.SerializeObject(subscriber);
-            var response = await _client.PostAsync($"https://api.moosend.com/v3/subscribers/{listId}/subscribe.json?apikey={_apiKey}", new StringContent(content));
+            var json = JsonConvert.SerializeObject(subscriber);
+            var content = new StringContent(json);
+            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+            var response = await _client.PostAsync($"https://api.moosend.com/v3/subscribers/{listId}/subscribe.json?apikey={_apiKey}", content);
             var model = await Read<MooSendResponse<MooSendSubscriber>>(response);
-            
+            if(model.Error != null)
+            {
+                throw new Exception(model.Error);
+            }
         }
 
         public async Task<T> Read<T>(HttpResponseMessage response)

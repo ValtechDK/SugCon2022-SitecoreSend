@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Sitecore.AspNet.RenderingEngine.Binding;
 using SugCon.SitecoreSend.Services;
+using System;
 using System.Threading.Tasks;
 
 namespace SugCon.SitecoreSend
@@ -20,7 +21,7 @@ namespace SugCon.SitecoreSend
         {
             var model = await _binder.Bind<SubscribeFormModel>(ViewContext);
             var fields = await _sendService.GetListCustomFields(model.ListId.Value);
-            // model.Fields = fields;
+            model.Fields = fields;
             return View("SubscribeForm", model);
         }
     }

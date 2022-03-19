@@ -36,17 +36,19 @@ namespace SugCon.SitecoreSend.Models
 
     public class MooSendSubscriber
     {
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string Name { get; set;}
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string Mobile { get; set; }
         public string Email { get; set; }
         
         [JsonIgnore]
-        public IEnumerable<KeyValuePair<string,string>> CustomFieldsCollection { get; set; } = new List<KeyValuePair<string,string>>();
+        public ICollection<KeyValuePair<string,string>> CustomFieldsCollection { get; set; } = new List<KeyValuePair<string,string>>();
 
-        [JsonProperty]
-        public string[] CustomFields => CustomFieldsCollection?
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string[] CustomFields => CustomFieldsCollection?.Any() == true ? CustomFieldsCollection
             .Select(pair => $"{pair.Key}={pair.Value}")
-            .ToArray();
+            .ToArray() : null;
     }
     
 }
