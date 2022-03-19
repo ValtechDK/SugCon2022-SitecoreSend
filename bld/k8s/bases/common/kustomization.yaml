@@ -60,5 +60,11 @@ patches:
   - path: ./patch.cm-cli.yaml
     target:
       kind: Deployment
-      name: id
+      name: cm
+
+  - path: ./patch.remove-healthcheck-cm.yaml
+    target:
+      kind: Deployment
+      name: cm
+
 
