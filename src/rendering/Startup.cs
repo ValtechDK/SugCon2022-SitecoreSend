@@ -85,6 +85,7 @@ namespace SugCon.SitecoreSend
                 options.SitecoreInstanceUri = Configuration.InstanceUri;
             });
 
+            services.AddTransient(sp => sp.GetRequiredService<IConfiguration>().GetSection(SitecoreOptions.Key).Get<SitecoreOptions>());
             services.AddTransient<ISendService, SitecoreSendService>();
         }
 
