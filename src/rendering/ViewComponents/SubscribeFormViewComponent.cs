@@ -19,7 +19,7 @@ namespace SugCon.SitecoreSend
         public async Task<IViewComponentResult> InvokeAsync(int maxPriority, bool isDone)
         {
             var model = await _binder.Bind<SubscribeFormModel>(ViewContext);
-            var fields = await _sendService.GetListCustomFields(model.ListId);
+            var fields = await _sendService.GetListCustomFields(model.ListId.Value);
             // model.Fields = fields;
             return View("SubscribeForm", model);
         }

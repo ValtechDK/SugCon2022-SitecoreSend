@@ -2,7 +2,7 @@
 @model SubscribeFormModel
 
 <div>
-    ModelBound view!
+    View Component!
     Subscribe to <sc-text asp-for="ListId"></sc-text>
     <form method="post" action="/subscribe/@(Model.ListId)">
         <input name="Name" placeholder="Your name" required />
