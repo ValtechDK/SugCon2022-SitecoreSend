@@ -1,0 +1,25 @@
+@using SugCon.SitecoreSend
+@model SubscribeFormModel
+
+<section>
+    <form method="post" action="/subscribe/@(Model.ListId.Value)">
+        <div><input name="Name" placeholder="Your name" required autocomplete="on" /></div>
+        <div><input name="Email" placeholder="your@email.com" type="email" required autocomplete="on" /></div>
+
+        @foreach (var fld in Model.Fields)
+        {
+            <div>
+                <label for=@fld.HtmlSafeName()>@fld.Name</label>
+                @if(new[] { MooSendFieldType.Text, MooSendFieldType.Number, MooSendFieldType.Checkbox}.Contains(fld.Type)) {
+                <input name="@fld.HtmlSafeName()" type="@fld.Type.HtmlInputType()" />
+                }
+                @if(fld.Type == MooSendFieldType.SingleDropDown)
+                {
+                    <span>Drop down not supported yet</span>
+                }
+            </div>
+        }
+        <div><input type="submit" /></div>
+    </form>
+
+</section>

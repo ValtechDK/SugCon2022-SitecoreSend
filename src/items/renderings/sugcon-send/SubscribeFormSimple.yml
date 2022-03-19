@@ -1,15 +1,15 @@
 ﻿---
-ID: "e6e28e91-a0a4-43d1-96e8-10da545f92a2"
+ID: "bde7410d-0692-4295-bf80-8431801c422c"
 Parent: "ec1d160e-8e66-4d10-8f26-a013688b8d77"
 Template: "04646a89-996f-4ee7-878a-ffdbf1f0ef0d"
-Path: "/sitecore/layout/Renderings/Project/sugcon-send/ContentBlock"
+Path: "/sitecore/layout/Renderings/Project/sugcon-send/SubscribeFormSimple"
 SharedFields:
 - ID: "037fe404-dd19-4bf7-8e30-4dadf68b27b0"
   Hint: componentName
-  Value: ContentBlock
+  Value: SubscribeFormSimple
 - ID: "1a7c85e5-dc0b-490d-9187-bb1dbcb4c72f"
   Hint: Datasource Template
-  Value: "/sitecore/templates/Project/sugcon-send/Content Block"
+  Value: "/sitecore/templates/Project/sugcon-send/Subscribe Form"
 - ID: "592a1ce7-abe0-4986-9783-0a34f3961dc0"
   Hint: Placeholder
   Value: "/sugcon-send-main"
@@ -23,14 +23,22 @@ Languages:
     Fields:
     - ID: "25bed78c-4957-4165-998a-ca1b52f67497"
       Hint: __Created
-      Value: 20200526T205221Z
+      Value: 20220319T135903Z
+    - ID: "52807595-0f8f-4b20-8d2a-cb71d28c6103"
+      Hint: __Owner
+      Value: |
+        sitecore\Admin
+    - ID: "5dd74568-4d4b-44c1-b513-0af5f4cda34f"
+      Hint: __Created by
+      Value: |
+        sitecore\Admin
     - ID: "8cdc337e-a112-42fb-bbb4-4143751e123f"
       Hint: __Revision
-      Value: "42862aa7-a90e-4099-a4d6-f2c64184a467"
+      Value: "83d0fbd8-2b96-4c53-a79f-ab38a6ae0ce1"
     - ID: "badd9cf9-53e0-4d0c-bcc0-2d784c282f6a"
       Hint: __Updated by
       Value: |
         sitecore\Admin
     - ID: "d9cf14b1-fa16-4ba6-9288-e8a174d4d522"
       Hint: __Updated
-      Value: 20220319T163913Z
+      Value: 20220319T163927Z

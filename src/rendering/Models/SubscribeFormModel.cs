@@ -1,11 +1,16 @@
-﻿using Sitecore.AspNet.RenderingEngine.Binding.Attributes;
+﻿using Sitecore.LayoutService.Client.Response.Model;
+using Sitecore.LayoutService.Client.Response.Model.Fields;
+using SugCon.SitecoreSend.Models;
+using System.Collections.Generic;
 
 namespace SugCon.SitecoreSend
 {
     public class SubscribeFormModel
     {
-        [SitecoreComponentField(Name = "List id")]
-        public string ListId { get; set; }
-        // public ICollection<MooSendCustomField> Fields { get; internal set; }
+        public TextField ListId { get; set; }
+        
+        public ICollection<MooSendCustomField> Fields { get; internal set; }
+
+        public Route Route { get; set; }
     }
 }
