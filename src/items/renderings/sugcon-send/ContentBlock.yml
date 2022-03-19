@@ -10,9 +10,6 @@ SharedFields:
 - ID: "1a7c85e5-dc0b-490d-9187-bb1dbcb4c72f"
   Hint: Datasource Template
   Value: "/sitecore/templates/Project/sugcon-send/Content Block"
-- ID: "592a1ce7-abe0-4986-9783-0a34f3961dc0"
-  Hint: Placeholder
-  Value: "/sugcon-send-main"
 - ID: "b5b27af1-25ef-405c-87ce-369b3a004016"
   Hint: Datasource Location
   Value: ./
@@ -26,11 +23,11 @@ Languages:
       Value: 20200526T205221Z
     - ID: "8cdc337e-a112-42fb-bbb4-4143751e123f"
       Hint: __Revision
-      Value: "42862aa7-a90e-4099-a4d6-f2c64184a467"
+      Value: "4f46b0ab-014b-4cf8-bf36-cb9fb0dfeadf"
     - ID: "badd9cf9-53e0-4d0c-bcc0-2d784c282f6a"
       Hint: __Updated by
       Value: |
         sitecore\Admin
     - ID: "d9cf14b1-fa16-4ba6-9288-e8a174d4d522"
       Hint: __Updated
-      Value: 20220319T163913Z
+      Value: 20200619T175800Z

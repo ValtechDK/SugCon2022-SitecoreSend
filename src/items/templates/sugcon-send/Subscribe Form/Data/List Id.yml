@@ -2,7 +2,7 @@
 ID: "e0a78f96-368e-4cf0-b9e3-2cc9923e6f7c"
 Parent: "095a6fb8-aa98-40e2-b61f-ee6883a09c83"
 Template: "455a3e98-a627-4b40-8035-e683a0331ac7"
-Path: "/sitecore/templates/Project/sugcon-send/Subscribe Form/Data/ListId"
+Path: "/sitecore/templates/Project/sugcon-send/Subscribe Form/Data/List Id"
 SharedFields:
 - ID: "ab162cc0-dc80-4abf-8871-998ee5d7ba32"
   Hint: Type

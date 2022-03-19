@@ -16,7 +16,7 @@ namespace SugCon.SitecoreSend.ContentResolvers
 
         private object GetNewsletter(Item newsletterRoot)
         {
-            var newsletterItem = newsletterRoot.Children.OrderBy(a => a["__sortorder"]).FirstOrDefault();
+            var newsletterItem = newsletterRoot.Children.OrderByDescending(a => a["__updated"]).FirstOrDefault();
 
             var newsletter = new 
             {

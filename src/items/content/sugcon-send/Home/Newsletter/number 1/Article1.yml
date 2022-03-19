@@ -1,0 +1,29 @@
+﻿---
+ID: "2f63db7b-7f82-4a8a-a570-e62289eaf24a"
+Parent: "871759ad-3841-4028-a6a9-9b98498f7499"
+Template: "b69f0620-8f79-44c5-8fc9-fb39c1f9d0b3"
+Path: "/sitecore/content/sugcon-send/Home/Newsletter/number 1/Article1"
+Languages:
+- Language: en
+  Versions:
+  - Version: 1
+    Fields:
+    - ID: "25bed78c-4957-4165-998a-ca1b52f67497"
+      Hint: __Created
+      Value: 20220319T153239Z
+    - ID: "8cdc337e-a112-42fb-bbb4-4143751e123f"
+      Hint: __Revision
+      Value: "75d4d189-26cc-47fb-8f8a-e6b8a988cea7"
+    - ID: "9ecac404-cb07-4321-9e69-f7837c7f383b"
+      Hint: Text
+      Value: tester 1
+    - ID: "badd9cf9-53e0-4d0c-bcc0-2d784c282f6a"
+      Hint: __Updated by
+      Value: |
+        sitecore\Admin
+    - ID: "d9cf14b1-fa16-4ba6-9288-e8a174d4d522"
+      Hint: __Updated
+      Value: 20220319T165102Z
+    - ID: "f6f7ce1a-c2a8-498d-a352-7a4739daa6d0"
+      Hint: Title
+      Value: test 1

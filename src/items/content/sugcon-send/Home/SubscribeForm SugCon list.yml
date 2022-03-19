@@ -3,10 +3,6 @@ ID: "ec0605cf-8480-45a8-834c-578da3d4b7b4"
 Parent: "453c1c1a-7e24-4f2f-8069-84165c6130a3"
 Template: "6ee886d3-b510-4852-94e5-8c879ebe1417"
 Path: "/sitecore/content/sugcon-send/Home/SubscribeForm SugCon list"
-SharedFields:
-- ID: "e0a78f96-368e-4cf0-b9e3-2cc9923e6f7c"
-  Hint: List Id
-  Value: "af70b0ec-68f5-48cb-a57d-6c11c1d1820b"
 Languages:
 - Language: en
   Versions:
@@ -33,3 +29,6 @@ Languages:
     - ID: "d9cf14b1-fa16-4ba6-9288-e8a174d4d522"
       Hint: __Updated
       Value: 20220319T140426Z
+    - ID: "e0a78f96-368e-4cf0-b9e3-2cc9923e6f7c"
+      Hint: List Id
+      Value: "af70b0ec-68f5-48cb-a57d-6c11c1d1820b"

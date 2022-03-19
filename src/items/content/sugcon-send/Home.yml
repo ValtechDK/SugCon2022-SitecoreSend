@@ -16,7 +16,8 @@ SharedFields:
           s:ds="{6E499575-A810-4B31-8C38-5F1BFB175F54}"
           s:id="{E6E28E91-A0A4-43D1-96E8-10DA545F92A2}"
           s:par=""
-          s:ph="/sugcon-send-main" />
+          s:ph="/sugcon-send-main"
+          s:ccb="Clear on publish" />
       </d>
     </r>
 Languages:
@@ -59,14 +60,14 @@ Languages:
         sitecore\Admin
     - ID: "8cdc337e-a112-42fb-bbb4-4143751e123f"
       Hint: __Revision
-      Value: "106c3bd0-256a-4dda-8a5f-e5391de2eda3"
+      Value: "94201443-b1f6-4853-a393-307ff6dab569"
     - ID: "badd9cf9-53e0-4d0c-bcc0-2d784c282f6a"
       Hint: __Updated by
       Value: |
         sitecore\Admin
     - ID: "d9cf14b1-fa16-4ba6-9288-e8a174d4d522"
       Hint: __Updated
-      Value: 20220319T140224Z
+      Value: 20220319T152718Z
     - ID: "e5365688-b6bb-41ab-aafb-3215d68507d8"
       Hint: Title
       Value: Welcome to Sitecore

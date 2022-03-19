@@ -65,6 +65,7 @@ namespace SugCon.SitecoreSend
                     options
                         .AddModelBoundView<ContentBlockModel>("ContentBlock")
                         .AddModelBoundView<SubscribeFormModel>("SubscribeFormSimple")
+                        .AddModelBoundView<NewsletterModel>("Newsletter")
                         .AddViewComponent("SubscribeForm")
                         .AddDefaultPartialView("_ComponentNotFound");
                 })
