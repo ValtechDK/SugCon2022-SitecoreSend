@@ -157,7 +157,7 @@ jobs:
         - powershell: |
             "${{parameters.hostname_services }}" -split " " | ForEach-Object {
               $service = "$_"
-              $hostname = "{0}-{1}.{2}" -f $service, $env:NAMESPACE, $env:DNS_TLD
+              $hostname = "{0}-{1}{2}" -f $service, $env:NAMESPACE, $env:DNS_TLD
 
               $path = "$(Pipeline.Workspace)/manifests/bases/common/${service}-hostname"
               if(-not (Test-Path $path)) {
@@ -363,8 +363,8 @@ jobs:
     displayName: Set names
 
   - pwsh: |
-      $cmHost = "{0}-{1}.{2}" -f "cm", $env:NAMESPACE, $env:DNS_TLD
-      $idHost = "{0}-{1}.{2}" -f "id", $env:NAMESPACE, $env:DNS_TLD
+      $cmHost = "{0}-{1}{2}" -f "cm", $env:NAMESPACE, $env:DNS_TLD
+      $idHost = "{0}-{1}{2}" -f "id", $env:NAMESPACE, $env:DNS_TLD
 
       Write-Host "Logging into ID Server"
       dotnet sitecore login --client-credentials true --auth "https://${idHost}" --cm "https://${cmHost}" --allow-write true --client-id "$(SITECORE_CLI_CLIENTID)" --client-secret "$(SITECORE_CLI_CLIENTSECRET)"
