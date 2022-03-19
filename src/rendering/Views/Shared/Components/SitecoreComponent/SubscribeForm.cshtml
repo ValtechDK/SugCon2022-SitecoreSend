@@ -1,0 +1,11 @@
+@using SugCon.SitecoreSend
+@model SubscribeFormModel
+
+<div>
+    <form method="post" action="/subscribe/@Model.ListId">
+        <input name="Name" placeholder="Your name" required />
+        <input name="Email" placeholder="your@email.com" type="email" required />
+    
+        <input type="submit" />
+    </form>
+</div>

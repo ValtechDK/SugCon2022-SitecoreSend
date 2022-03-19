@@ -16,6 +16,7 @@ namespace SugCon.SitecoreSend.Configuration
         public string ApiKey { get; set; }
         public Uri RenderingHostUri { get; set; }
         public bool EnableExperienceEditor { get; set; }
+        public string SitecoreSendApiKey { get; set; }
 
         public Uri LayoutServiceUri
         {

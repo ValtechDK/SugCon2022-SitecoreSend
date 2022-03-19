@@ -16,6 +16,7 @@ using Sitecore.AspNet.Tracking;
 using Sitecore.LayoutService.Client.Extensions;
 using Sitecore.LayoutService.Client.Newtonsoft.Extensions;
 using Sitecore.LayoutService.Client.Request;
+using SugCon.SitecoreSend.Services;
 
 namespace SugCon.SitecoreSend
 {
@@ -63,6 +64,8 @@ namespace SugCon.SitecoreSend
                     //Register your components here
                     options
                         .AddModelBoundView<ContentBlockModel>("ContentBlock")
+                        //.AddViewComponent("SubscribeForm")
+                        .AddModelBoundView<SubscribeFormModel>("SubscribeForm")
                         .AddDefaultPartialView("_ComponentNotFound");
                 })
                 // Includes forwarding of Scheme as X-Forwarded-Proto to the Layout Service, so that
@@ -81,6 +84,8 @@ namespace SugCon.SitecoreSend
                 // from the Rendering Host and will be used to proxy robot detection scripts.
                 options.SitecoreInstanceUri = Configuration.InstanceUri;
             });
+
+            services.AddTransient<ISendService, SitecoreSendService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
