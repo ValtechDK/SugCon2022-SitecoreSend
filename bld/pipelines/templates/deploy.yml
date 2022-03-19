@@ -28,7 +28,7 @@ parameters:
   default:  1.23.4
 - name: hostname_services
   type: string
-  default: cm id cd ww
+  default: cm id cd
 
 jobs:
 - deployment: deploy
