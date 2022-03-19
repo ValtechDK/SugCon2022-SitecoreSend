@@ -66,6 +66,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="App_Config\Include\**\*.config" />
+    <Content Include="App_Config\Include\SitecoreSend.config" />
     <None Include="Platform.wpp.targets" />
     <None Include="Properties\PublishProfiles\Local.pubxml" />
     <None Include="README.md" />
@@ -73,6 +74,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ContentResolvers\NewsletterContentResolver.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Client\SitecoreSendModels.cs" />
+    <Compile Include="Client\SitecoreSendService.cs" />
+    <Compile Include="Providers\MooSendListsProvider.cs" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

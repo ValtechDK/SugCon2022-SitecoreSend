@@ -1,36 +1,49 @@
 {
-    "namespace": "Items",
-    "items" : {
-        "includes": [
-            {
-                "name": "api-key",
-                "path": "/sitecore/system/Settings/Services/API Keys/sugcon-send",
-                "scope": "singleItem"
-            },
-            {
-                "name": "templates",
-                "path": "/sitecore/templates/Project/sugcon-send"
-            },
-            {
-                "name": "layouts",
-                "path": "/sitecore/layout/Layouts/Project/sugcon-send"
-            },
-            {
-                "name": "renderings",
-                "path": "/sitecore/layout/Renderings/Project/sugcon-send"
-            },
-            {
-                "name": "placeholders",
-                "path": "/sitecore/layout/Placeholder Settings/Project/sugcon-send"
-            },
-            {
-                "name": "content",
-                "path": "/sitecore/content/sugcon-send"
-            },
-            {
-                "name": "media",
-                "path": "/sitecore/media library/sugcon-send"
-            }
-        ]
-    }
+  "namespace": "Items",
+  "items": {
+    "includes": [
+      {
+        "name": "api-key",
+        "path": "/sitecore/system/Settings/Services/API Keys/sugcon-send",
+        "scope": "singleItem",
+        "allowedPushOperations": "createUpdateAndDelete"
+      },
+      {
+        "name": "templates",
+        "path": "/sitecore/templates/Project/sugcon-send",
+        "allowedPushOperations": "createUpdateAndDelete"
+      },
+      {
+        "name": "layouts",
+        "path": "/sitecore/layout/Layouts/Project/sugcon-send",
+        "allowedPushOperations": "createUpdateAndDelete"
+      },
+      {
+        "name": "renderings",
+        "path": "/sitecore/layout/Renderings/Project/sugcon-send",
+        "allowedPushOperations": "createUpdateAndDelete"
+      },
+      {
+        "name": "placeholders",
+        "path": "/sitecore/layout/Placeholder Settings/Project/sugcon-send",
+        "allowedPushOperations": "createUpdateAndDelete"
+      },
+      {
+        "name": "content",
+        "path": "/sitecore/content/sugcon-send",
+        "allowedPushOperations": "createUpdateAndDelete"
+      },
+      {
+        "name": "media",
+        "path": "/sitecore/media library/sugcon-send",
+        "allowedPushOperations": "createUpdateAndDelete"
+      },
+      {
+        "name": "listsroot",
+        "path": "/sitecore/system/Settings/SitecoreSendLists",
+        "scope": "singleItem",
+        "allowedPushOperations": "createOnly"
+      }
+    ]
+  }
 }
