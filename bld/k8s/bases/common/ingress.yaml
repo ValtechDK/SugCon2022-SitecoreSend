@@ -35,7 +35,7 @@ spec:
                 port:
                   number: 80
 
-    - host: $(www-hostname)
+    - host: $(cd-hostname)
       http:
         paths:
           - path: /
@@ -49,5 +49,5 @@ spec:
   - hosts:
     - $(cm-hostname)
     - $(id-hostname)
-    - $(www-hostname)
+    - $(cd-hostname)
     secretName: letsencrypt-tls-sitecore
