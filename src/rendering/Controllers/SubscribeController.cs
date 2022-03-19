@@ -2,6 +2,7 @@
 using SugCon.SitecoreSend.Models;
 using SugCon.SitecoreSend.Services;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace SugCon.SitecoreSend.Controllers
@@ -16,8 +17,25 @@ namespace SugCon.SitecoreSend.Controllers
         }
 
         [Route("/subscribe/{listId}"), HttpPost]
-        public async Task<IActionResult> Index(string listId, MooSendSubscriber subscriber)
+        public async Task<IActionResult> Index(string listId, MooSendSubscriberUpdate subscriber)
         {
+            var fields = await _service.GetListCustomFields(listId);
+            subscriber.CustomFields = fields.Select(field => new
+            {
+                field,
+                postedValue = Request.Form[field.HtmlSafeName()],
+            }).Where(x => !string.IsNullOrEmpty(x.postedValue))
+            .Select(x =>
+            {
+                var value = x.postedValue;
+                if(x.field.Type == MooSendFieldType.Checkbox)
+                {
+                    value = "true";
+                }
+                return $"{x.field.Name}={value}";
+            })
+            .ToArray();
+
             try
             {
                 await _service.Subscribe(listId, subscriber);
@@ -26,7 +44,6 @@ namespace SugCon.SitecoreSend.Controllers
             catch (Exception exc)
             {
                 return Redirect($"/?subscribe=error&error={exc.Message})");
-
             }
         }
     }

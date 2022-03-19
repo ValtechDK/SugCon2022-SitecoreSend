@@ -19,10 +19,16 @@ namespace SugCon.SitecoreSend
 
         public async Task<IViewComponentResult> InvokeAsync(int maxPriority, bool isDone)
         {
+            if(ViewContext.HttpContext.Request.Query["subscribe"] == "ok")
+            {
+                return View("Confirmed");
+            }
+
             var model = await _binder.Bind<SubscribeFormModel>(ViewContext);
             var fields = await _sendService.GetListCustomFields(model.ListId.Value);
             model.Fields = fields;
             return View("SubscribeForm", model);
         }
     }
+
 }

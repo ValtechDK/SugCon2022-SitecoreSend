@@ -6,7 +6,7 @@ namespace SugCon.SitecoreSend.Models
 {
     public class MooSendResponse<T>
     {
-        public int Code { get;set; }
+        public int Code { get; set; }
         public string Error { get; set; }
         public T Context { get; set; }
     }
@@ -37,18 +37,15 @@ namespace SugCon.SitecoreSend.Models
     public class MooSendSubscriber
     {
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public string Name { get; set;}
+        public string Name { get; set; }
         [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
         public string Mobile { get; set; }
         public string Email { get; set; }
-        
-        [JsonIgnore]
-        public ICollection<KeyValuePair<string,string>> CustomFieldsCollection { get; set; } = new List<KeyValuePair<string,string>>();
-
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public string[] CustomFields => CustomFieldsCollection?.Any() == true ? CustomFieldsCollection
-            .Select(pair => $"{pair.Key}={pair.Value}")
-            .ToArray() : null;
     }
-    
+
+    public class MooSendSubscriberUpdate : MooSendSubscriber
+    {
+        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+        public string[] CustomFields { get; set; }
+    }
 }
