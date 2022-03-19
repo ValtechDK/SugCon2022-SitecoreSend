@@ -37,6 +37,12 @@
         "name": "media",
         "path": "/sitecore/media library/sugcon-send",
         "allowedPushOperations": "createUpdateAndDelete"
+      },
+      {
+        "name": "listsroot",
+        "path": "/sitecore/system/Settings/SitecoreSendLists",
+        "scope": "singleItem",
+        "allowedPushOperations": "createOnly"
       }
     ]
   }
