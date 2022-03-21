@@ -66,7 +66,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="App_Config\Include\**\*.config" />
-    <Content Include="App_Config\Include\SitecoreSend.config" />
     <None Include="Platform.wpp.targets" />
     <None Include="Properties\PublishProfiles\Local.pubxml" />
     <None Include="README.md" />
