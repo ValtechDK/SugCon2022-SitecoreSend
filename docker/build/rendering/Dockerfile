@@ -16,7 +16,7 @@ ENTRYPOINT ["dotnet", "watch", "-v", "--project", ".\\rendering", "run", "--no-l
 
 FROM ${SOLUTION_IMAGE} as solution
 
-FROM mcr.microsoft.com/dotnet/core/aspnet:3.1 as release
+FROM mcr.microsoft.com/dotnet/core/aspnet:3.1-nanoserver-1809 as release
 WORKDIR /app
 COPY --from=solution /artifacts/rendering/ ./
 EXPOSE 80
