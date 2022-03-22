@@ -12,8 +12,6 @@ parameters:
 
 jobs:
 - job: items
-  dependsOn:
-    - deploy
   displayName: Push items
   condition: and(succeeded(), ne(variables['SITECORE_CLI_CLIENTID'], '') )
   continueOnError: true
