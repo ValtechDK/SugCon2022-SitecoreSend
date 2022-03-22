@@ -30,6 +30,7 @@ spec:
       containers:
       - name: rendering
         image: rendering
+        imagePullPolicy: Always
         ports:
         - containerPort: 80
         env:
