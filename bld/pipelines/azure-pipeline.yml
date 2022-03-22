@@ -66,3 +66,19 @@ stages:
       deploytype: nonproduction
       pool_name: $(deploy_pool_name)
       pool_vm: $(deploy_pool_vm)
+
+
+- stage: deploy_items
+  displayName: Deploy items
+  dependsOn:
+  - deploy
+  variables:
+  - group: general
+  - group: testing
+  jobs:
+  - template: templates/deploy-iotems.yml
+    parameters:
+      namespace: sugcon-send-$(Build.SourceBranchName)
+      dns_tld: ${{ variables.dns_tld }}
+      pool_name: $(deploy_pool_name)
+      pool_vm: $(deploy_pool_vm)
