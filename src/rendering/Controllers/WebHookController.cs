@@ -14,9 +14,23 @@ namespace SugCon.SitecoreSend.Controllers
         }
 
         [Route("/api/webhooks/incoming/moosend"), HttpPost]
-        public ContentResult WebHook([FromBody] object obj)
+        public ContentResult WebHookPost([FromBody] object obj)
         {
-            _logger.LogInformation($"Received webhook: \r\n{JsonConvert.SerializeObject(obj, Formatting.Indented)}");
+            _logger.LogInformation($"Received webhook POST: \r\n{JsonConvert.SerializeObject(obj, Formatting.Indented)}");
+            return Content("OK");
+        }
+
+        [Route("/api/webhooks/incoming/moosend"), HttpGet]
+        public ContentResult WebHookGet([FromQuery] object obj)
+        {
+            _logger.LogInformation($"Received webhook GET: \r\n{JsonConvert.SerializeObject(obj, Formatting.Indented)}");
+            return Content("OK");
+        }
+
+        [Route("/api/webhooks/incoming/moosend"), HttpHead]
+        public ContentResult WebHookHead([FromQuery] object obj)
+        {
+            _logger.LogInformation($"Received webhook HEAD: \r\n{JsonConvert.SerializeObject(obj, Formatting.Indented)}");
             return Content("OK");
         }
     }
