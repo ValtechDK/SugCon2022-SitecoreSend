@@ -36,7 +36,7 @@ jobs:
   pool:
     name: ${{ parameters.pool_name }}
     vmImage: ${{ parameters.pool_vm }}
-  environment: '${{ parameters.environment_name }}.${{parameters.namespace }}'
+  environment: '${{ parameters.environment_name }}'
   strategy:
     runOnce:
       deploy:
@@ -140,10 +140,10 @@ jobs:
             Write-Host "##vso[task.setvariable variable=master_resource_k8s_service_account]$account"
           displayName: Set master service account
 
-        - task: ReviewApp@0
-          inputs:
-            resourceName: ${{ parameters.master_resource_name }}
-          displayName: Deploy dynamic environment resource
+        # - task: ReviewApp@0
+        #   inputs:
+        #     resourceName: ${{ parameters.master_resource_name }}
+        #   displayName: Deploy dynamic environment resource
 
         - task: Kubernetes@1
           inputs:
