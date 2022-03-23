@@ -2,7 +2,7 @@
 @model SubscribeFormModel
 
 <div>
-    <form method="post" action="/subscribe/@(Model.ListId.Value)">
+    <form method="post" action="/subscribe/@(Model.ListIdString)">
         <input name="Name" placeholder="Your name" required />
         <input name="Email" placeholder="your@email.com" type="email" required />
         <input type="submit" />

@@ -25,9 +25,9 @@ namespace SugCon.SitecoreSend
             }
 
             var model = await _binder.Bind<SubscribeFormModel>(ViewContext);
-            if (!string.IsNullOrEmpty(model.ListId?.Value))
+            if (model.ListId != null && model.ListId.Id != Guid.Empty)
             {
-                var fields = await _sendService.GetListCustomFields(model.ListId.Value);
+                var fields = await _sendService.GetListCustomFields(model.ListId.Id);
                 model.Fields = fields;
             }
 
