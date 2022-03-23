@@ -19,7 +19,7 @@
             <text>mootrack(‘identify’, '@(Context.Request.Query["email"].ToString())');</text>
         }
         mootrack(‘trackPageView’)
-        @if(Context.Request.Query["customEvent"].ToString() != null)
+        @if(!string.IsNullOrWhiteSpace(Context.Request.Query["customEvent"].ToString()))
         {
             <text>mootrack('@(Context.Request.Query["customEvent"].ToString())');</text>
         }
