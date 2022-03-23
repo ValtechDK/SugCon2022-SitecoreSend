@@ -7,10 +7,12 @@ namespace SugCon.SitecoreSend
 {
     public class SubscribeFormModel
     {
-        public TextField ListId { get; set; }
+        public ItemLinkField ListId { get; set; }
         
-        public ICollection<MooSendCustomField> Fields { get; internal set; }
+        public ICollection<MooSendCustomField> Fields { get; internal set; } = new List<MooSendCustomField>(0);
 
         public Route Route { get; set; }
+
+        public string ListIdString => ListId?.Id.ToString();
     }
 }

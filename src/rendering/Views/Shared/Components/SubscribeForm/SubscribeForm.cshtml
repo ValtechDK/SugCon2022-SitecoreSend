@@ -2,7 +2,7 @@
 @model SubscribeFormModel
 
 <section>
-    <form method="post" action="/subscribe/@(Model.ListId.Value)">
+    <form method="post" action="/subscribe/@(Model.ListIdString)">
         <div><input name="Name" placeholder="Your name" required autocomplete="on" /></div>
         <div><input name="Email" placeholder="your@email.com" type="email" required autocomplete="on" /></div>
 

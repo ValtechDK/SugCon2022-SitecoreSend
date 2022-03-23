@@ -15,6 +15,14 @@ namespace SugCon.SitecoreSend.Services
         Task Subscribe(string listId, MooSendSubscriberUpdate subscriber);
     }
 
+    public static class SendServiceExtensions
+    {
+        public static Task<ICollection<MooSendCustomField>> GetListCustomFields(this ISendService service, Guid id)
+        {
+            return service.GetListCustomFields(id.ToString());
+        }
+    }
+
     public class SitecoreSendService : ISendService, IDisposable
     {
         private readonly ILogger<SitecoreSendService> _logger;
