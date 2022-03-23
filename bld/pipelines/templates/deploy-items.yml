@@ -1,0 +1,66 @@
+parameters:
+- name: namespace
+  type: string
+- name: dns_tld
+  type: string
+- name: pool_name
+  type: string
+  default: Azure Pipelines
+- name: pool_vm
+  type: string
+  default: ubuntu-latest
+
+jobs:
+- job: items
+  displayName: Push items
+  condition: and(succeeded(), ne(variables['SITECORE_CLI_CLIENTID'], '') )
+  continueOnError: true
+  pool:
+    name: ${{ parameters.pool_name }}
+    vmImage: ${{ parameters.pool_vm }}
+  
+  steps:
+  - checkout: self
+
+  - task: UseDotNet@2
+    inputs:
+      packageType: 'sdk'
+      version: '3.x'
+      performMultiLevelLookup: true
+
+  - pwsh: |
+      dotnet tool restore
+      dotnet sitecore --version
+    displayName: Install Sitecore CLI
+
+  - pwsh: |
+      $namespaceLower = "${{ parameters.namespace }}".ToLower().Substring(0, [math]::Min(58, "${{ parameters.namespace }}".Length)).Replace("_", "-")
+      Write-Host "##vso[task.setvariable variable=namespace;isOutput=true]$namespaceLower"
+    name: names
+    displayName: Set names
+
+  - pwsh: |
+      $cmHost = "{0}-{1}{2}" -f "cm", $env:NAMESPACE, $env:DNS_TLD
+      $idHost = "{0}-{1}{2}" -f "id", $env:NAMESPACE, $env:DNS_TLD
+
+      Write-Host "Logging into ID Server"
+      dotnet sitecore login --client-credentials true --auth "https://${idHost}" --cm "https://${cmHost}" --allow-write true --client-id "$(SITECORE_CLI_CLIENTID)" --client-secret "$(SITECORE_CLI_CLIENTSECRET)"
+    displayName: Login to sitecore
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      NAMESPACE: $(names.namespace)
+      DNS_TLD: ${{ parameters.dns_tld }}
+
+  - pwsh: |
+      dotnet sitecore ser push --publish --verbose --trace
+    displayName: Publish items
+    continueOnError: true
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
+  - pwsh: |
+      dotnet sitecore index schema-populate --verbose --trace
+    displayName: Populate schema
+    continueOnError: true
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
