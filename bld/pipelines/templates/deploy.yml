@@ -240,16 +240,16 @@ jobs:
             outputFormat: ''
           displayName: Get solr-init logs
 
-        - task: Kubernetes@1
-          continueOnError: true
-          inputs:
-            connectionType: Kubernetes Service Connection
-            kubernetesServiceEndpoint: ${{ parameters.k8s_admin_connection }}
-            command: delete
-            namespace: $(names.namespace)
-            arguments: job mssql-init solr-init
-            outputFormat: ''
-          displayName: Remove storage init containers
+        # - task: Kubernetes@1
+        #   continueOnError: true
+        #   inputs:
+        #     connectionType: Kubernetes Service Connection
+        #     kubernetesServiceEndpoint: ${{ parameters.k8s_admin_connection }}
+        #     command: delete
+        #     namespace: $(names.namespace)
+        #     arguments: job mssql-init solr-init
+        #     outputFormat: ''
+        #   displayName: Remove storage init containers
 
         - task: Kubernetes@1
           inputs:
