@@ -39,7 +39,7 @@ namespace SugCon.SitecoreSend.Controllers
             try
             {
                 await _service.Subscribe(listId, subscriber);
-                return Redirect("/?subscribe=ok");
+                return Redirect($"/?subscribe=ok&email={subscriber.Email}");
             }
             catch (Exception exc)
             {
