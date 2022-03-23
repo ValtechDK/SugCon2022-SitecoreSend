@@ -20,7 +20,7 @@ namespace SugCon.SitecoreSend.Providers
         private readonly Lazy<ICache> _cache;
         private readonly ISendService _service;
 
-        private static readonly TimeSpan CacheTime = TimeSpan.FromMinutes(5);
+        private static readonly TimeSpan CacheTime = TimeSpan.FromMinutes(10);
 
         public MooSendListsProvider(string contentRootItemId, string contentItemTemplateId) : this(
             contentRootItemId, contentRootItemId,
@@ -53,6 +53,7 @@ namespace SugCon.SitecoreSend.Providers
             {
                 if (_cache.Value.GetValue(key) is Dictionary<Guid, MooSendList> result) return result;
 
+                Sitecore.Diagnostics.Log.Info("Provider request too MooSend", this);
                 try
                 {
                     var lists = _service.GetLists().ConfigureAwait(true).GetAwaiter().GetResult();
