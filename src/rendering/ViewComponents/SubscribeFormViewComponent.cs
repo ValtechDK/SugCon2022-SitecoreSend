@@ -25,10 +25,13 @@ namespace SugCon.SitecoreSend
             }
 
             var model = await _binder.Bind<SubscribeFormModel>(ViewContext);
-            var fields = await _sendService.GetListCustomFields(model.ListId.Value);
-            model.Fields = fields;
+            if (!string.IsNullOrEmpty(model.ListId?.Value))
+            {
+                var fields = await _sendService.GetListCustomFields(model.ListId.Value);
+                model.Fields = fields;
+            }
+
             return View("SubscribeForm", model);
         }
     }
-
 }
