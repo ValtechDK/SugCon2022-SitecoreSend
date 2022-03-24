@@ -192,6 +192,12 @@ jobs:
           workingDirectory: $(Pipeline.Workspace)/manifests/bases/common
           displayName: Create custom secrets files
 
+        - task: PublishPipelineArtifact@1
+          inputs:
+            artifact: 'deployment-$(Build.BuildNumber)-$(System.PhaseAttempt)'
+            path: '$(Pipeline.Workspace)/manifests/'
+          displayName: Publish manifests artifacts
+
         - task: Kubernetes@1
           inputs:
             kubernetesServiceEndpoint: ${{ parameters.k8s_admin_connection }}
