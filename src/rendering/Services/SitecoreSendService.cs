@@ -68,10 +68,6 @@ namespace SugCon.SitecoreSend.Services
             {
                 throw new Exception("Error: " + content);
             }
-
             return JsonConvert.DeserializeObject<T>(content); ;
-        } 
-
-
-    }
+        }     }
 }
