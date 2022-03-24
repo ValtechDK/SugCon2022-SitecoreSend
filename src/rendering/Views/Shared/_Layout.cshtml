@@ -16,9 +16,9 @@
     
         @if(!string.IsNullOrWhiteSpace(Context.Request.Query["email"].ToString()))
         {
-            <text>mootrack(‘identify’, '@(Context.Request.Query["email"].ToString())');</text>
+            <text>mootrack('identify', '@(Context.Request.Query["email"].ToString())');</text>
         }
-        mootrack(‘trackPageView’)
+        mootrack('trackPageView');
         @if(!string.IsNullOrWhiteSpace(Context.Request.Query["customEvent"].ToString()))
         {
             <text>mootrack('@(Context.Request.Query["customEvent"].ToString())');</text>
